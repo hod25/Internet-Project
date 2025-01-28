@@ -22,21 +22,32 @@ class BaseController<T> {
         }
     };
 
-    // כנראה מיותר. אולי להמשך
-    // async getById(req: Request, res: Response) {
-    //     const id = req.params.id;
+    // לא מיותר!
+    async getById(req: Request, res: Response) {
+        const id = req.params.id;
 
-    //     try {
-    //         const item = await this.model.findById(id);
-    //         if (item != null) {
-    //             res.send(item);
-    //         } else {
-    //             res.status(404).send("not found");
-    //         }
-    //     } catch (error) {
-    //         res.status(400).send(error);
-    //     }
-    // };
+        try {
+            const item = await this.model.findById(id);
+            if (item != null) {
+                res.send(item);
+            } else {
+                res.status(404).send("not found");
+            }
+        } catch (error) {
+            res.status(400).send(error);
+        }
+    };
+
+    async update(req: Request, res: Response) {
+        const id = req.params.id;
+        const body = req.body;
+        try {
+            const item = await this.model.findByIdAndUpdate(id, body, { new: true });
+            res.send(item);
+        } catch (error) {
+            res.status(400).send(error);
+        }
+    };
 
     async create(req: Request, res: Response) {
         const body = req.body;
@@ -59,6 +70,5 @@ class BaseController<T> {
     };
 
 }
-
 
 export default BaseController
