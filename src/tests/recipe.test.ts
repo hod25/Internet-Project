@@ -15,7 +15,7 @@ describe("Recipe Tests", () => {
       id: "123", 
       title: "tile",
       image: "url",//לבדוק
-      ingredients: "test",
+      ingredients: "",
       tags: "test",
       owner: "test",
       likes: 3,

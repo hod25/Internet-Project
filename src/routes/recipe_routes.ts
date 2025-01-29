@@ -17,3 +17,5 @@ router.get("/:user", RecipeController.getRecipeByUser);
 //get request to by tag and title
 router.get("/:tag/:title", RecipeController.getRecipeByTagTitle);
 
+// delete request to delete a recipe by id
+router.delete("/:id", RecipeController.deleteRecipe);
