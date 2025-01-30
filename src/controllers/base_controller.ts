@@ -7,7 +7,8 @@ class BaseController<T> {
         this.model = model;
     }
 
-    async getAll(req: Request, res: Response) {
+    //get all or get by id based on reqest params
+    async get(req: Request, res: Response) {
         const filter = req.query.owner;
         try {
             if (filter) {
@@ -23,20 +24,19 @@ class BaseController<T> {
     };
 
     // לא מיותר!
-    async getById(req: Request, res: Response) {
-        const id = req.params.id;
-
-        try {
-            const item = await this.model.findById(id);
-            if (item != null) {
-                res.send(item);
-            } else {
-                res.status(404).send("not found");
-            }
-        } catch (error) {
-            res.status(400).send(error);
-        }
-    };
+    // async getById(req: Request, res: Response) {
+    //     const id = req.params.id;
+    //     try {
+    //         const item = await this.model.findById(id);
+    //         if (item != null) {
+    //             res.send(item);
+    //         } else {
+    //             res.status(404).send("not found");
+    //         }
+    //     } catch (error) {
+    //         res.status(400).send(error);
+    //     }
+    // };
 
     async update(req: Request, res: Response) {
         const id = req.params.id;

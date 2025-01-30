@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 export interface IRecipe {
   title: string;
   image: string;
-  ingredients: string;
-  tags: string;
+  ingredients: { name: string }[] ;
+  tags: { name: string }[];
   owner: string;
   likes: number;
 }

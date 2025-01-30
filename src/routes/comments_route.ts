@@ -1,6 +1,6 @@
 import express from "express";
 const router = express.Router();
-import commentsController from "../controllers/comments_controller";
+import commentsController from "../controllers/comment_controller";
 
 /**
 * @swagger
@@ -9,9 +9,9 @@ import commentsController from "../controllers/comments_controller";
 *   description: The Comments API
 */
 
-router.get("/", commentsController.getAll.bind(commentsController));
+router.get("/", commentsController.get.bind(commentsController));
 
-router.get("/:id", commentsController.getById.bind(commentsController));
+router.get("/:id", commentsController.get.bind(commentsController));
 
 router.post("/", commentsController.create.bind(commentsController));
 

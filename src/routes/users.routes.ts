@@ -1,11 +1,11 @@
 import express from "express";
 const router = express.Router();
-import usersController from "../controllers/users_controller";
+import usersController from "../controllers/user_controller";
 // import { authMiddleware } from "../controllers/auth_controller";
 
-router.get("/", usersController.getAll.bind(usersController));
+router.get("/", usersController.get.bind(usersController));
 
-router.get("/:id", usersController.getById.bind(usersController));
+router.get("/:id", usersController.get.bind(usersController));
 router.get("/:email", usersController.getByEmail.bind(usersController));
 
 router.delete("/:id", usersController.deleteItem.bind(usersController));
