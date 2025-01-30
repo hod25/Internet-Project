@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import IRecipe from "../models/recipe_model";
 
 export interface IRecipe {
   title: string;

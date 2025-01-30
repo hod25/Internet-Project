@@ -2,6 +2,15 @@ import express from "express";
 const router = express.Router();
 import { RecipeController } from "../controllers/recipe_controller";
 
+
+/**
+* @swagger
+* tags:
+*   name: Recipe
+*   description: The Recipe API
+*/
+
+
 //post request to create a new recipe
 router.post("/", RecipeController.createRecipe);
 
