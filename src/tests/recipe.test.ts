@@ -37,6 +37,10 @@ beforeAll(async () => {
   // testPost.owner = response2.body._id;
 });
 
+afterAll((done) => {
+  mongoose.connection.close();
+  done();
+});
 
 // test for recipe 
 describe("Recipe Tests", () => {

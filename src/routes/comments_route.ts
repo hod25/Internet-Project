@@ -15,6 +15,6 @@ router.get("/:id", commentsController.get.bind(commentsController));
 
 router.post("/", commentsController.create.bind(commentsController));
 
-router.delete("/:id", commentsController.deleteItem.bind(commentsController));
+router.delete("/:id", commentsController.delete.bind(commentsController));
 
 export default router;
