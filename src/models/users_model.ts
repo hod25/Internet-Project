@@ -3,8 +3,10 @@ import mongoose from "mongoose";
 export interface IUser {
   email: string;
   password: string;
-  _id?: string;
-  refreshToken?: string[];
+  name: string;
+  last_name: string;
+  _id?: string;//לא צריך?
+  // refreshToken?: string[];
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -17,10 +19,18 @@ const userSchema = new mongoose.Schema<IUser>({
     type: String,
     required: true,
   },
-  refreshToken: {
-    type: [String],
-    default: [],
-  }
+  name: {
+    type: String,
+    required: true,
+  },
+  last_name: {
+    type: String,
+    required: true,
+  },
+  // refreshToken: {
+  //   type: [String],
+  //   default: [],
+  // }
 });
 
 const userModel = mongoose.model<IUser>("Users", userSchema);
