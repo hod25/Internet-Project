@@ -59,7 +59,7 @@ class BaseController<T> {
         }
     };
 
-    async deleteItem(req: Request, res: Response) {
+    async delete(req: Request, res: Response) {
         const id = req.params.id;
         try {
             const rs = await this.model.findByIdAndDelete(id);
@@ -68,7 +68,10 @@ class BaseController<T> {
             res.status(400).send(error);
         }
     };
-
 }
+
+// const createController = <T>(model: Model<T>) => {
+//     return new BaseController(model);
+// }
 
 export default BaseController

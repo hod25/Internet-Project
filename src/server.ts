@@ -4,9 +4,9 @@ import dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
-import posts_routes from "./routes/posts_route";
+import recipe_routes from "./routes/recipe_routes";
 import comments_routes from "./routes/comments_route";
-import auth_routes from "./routes/auth_routes";
+// import auth_routes from "./routes/auth_routes";
 import users_routes from "./routes/users.routes";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
@@ -47,10 +47,10 @@ const initApp = (): Promise<Express> => {
         .then(() => {
           app.use(bodyParser.json());
           app.use(bodyParser.urlencoded({ extended: true }));
-          app.use("/posts", posts_routes);
-          app.use("/comments", comments_routes);
-          app.use("/auth", auth_routes);
-          app.use("/users", users_routes);
+          app.use("/recipe", recipe_routes);
+          // app.use("/comments", comments_routes);
+          // app.use("/auth", recipe_routes);
+          // app.use("/users", users_routes);
           resolve(app);
         })
         .catch((err) => {
