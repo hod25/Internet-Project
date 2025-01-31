@@ -17,12 +17,20 @@ const testUser: User = {
   password: "testpassword",
   name: "user1",
   last_name: "last1",
+  background: "background1",
+  image: "image1",
+  tag: "tag1",
+  profile: "profile1",
 }
 const testUser2: User = {
     email: "galgadot@user.com",
     password: "wonderwoman",
     name: "gal",
     last_name: "gadot",
+    background: "background2",
+    image: "image2",
+    tag: "tag2",
+    profile: "profile2",
   }
 
 beforeAll(async () => {

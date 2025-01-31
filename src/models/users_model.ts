@@ -5,8 +5,12 @@ export interface IUser {
   password: string;
   name: string;
   last_name: string;
+  background: string;
   _id?: string;//לא צריך?
   // refreshToken?: string[];
+  image?: string;
+  tag?: string,//?-?
+  profile?: string,
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -26,6 +30,22 @@ const userSchema = new mongoose.Schema<IUser>({
   last_name: {
     type: String,
     required: true,
+  },
+  background: {
+    type: String,
+    required: true,
+  },
+  image: {
+    type: String,
+    default: "",
+  },
+  tag: {
+    type: String,
+    default: "",
+  },
+  profile: {
+    type: String,
+    default: "",
   },
   // refreshToken: {
   //   type: [String],
