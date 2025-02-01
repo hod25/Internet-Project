@@ -5,11 +5,27 @@ import commentsModel from "../models/comment_model";
 import { Express } from "express";
 
 let app: Express;
+
 const testUser = {
   email: "test@user.com",
-  password: "123456",
-  name: "Test",
-  last_name: "User",
+  password: "testpassword",
+  name: "user1",
+  last_name: "last1",
+  background: "background1",
+  image: "image1",
+  tag: "tag1",
+  profile: "profile1",
+}
+
+const testUser2 = {
+  email: "galgadot@user.com",
+  password: "wonderwoman",
+  name: "gal",
+  last_name: "gadot",
+  background: "background2",
+  image: "image2",
+  tag: "tag2",
+  profile: "profile2",  
 };
 
 let accessToken: string;

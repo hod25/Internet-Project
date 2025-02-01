@@ -7,7 +7,7 @@ import recipeModel, { IRecipe } from "../models/recipe_model";
 var app: Express;
 var recipeId: "";
 
-var base = "/recipe/";
+const baseUrl = "/recipe";
 const testRecipe: IRecipe = {
   title: "hamburger",
   image: "../images/burger.jpg",
@@ -28,6 +28,7 @@ const testRecipe2: IRecipe = {
 
 
 beforeAll(async () => {
+  console.log("beforeAll");
   app = await initApp();
   await recipeModel.deleteMany();
   //const response = await request(app).post("/auth/register").send(testUser);
@@ -38,6 +39,7 @@ beforeAll(async () => {
 });
 
 afterAll((done) => {
+  console.log("afterAll");
   mongoose.connection.close();
   done();
 });
@@ -46,13 +48,13 @@ afterAll((done) => {
 describe("Recipe Tests", () => {
   // at first the db is empty
   test("Recipe test get all", async () => {
-    const response = await request(app).get(base);
+    const response = await request(app).get(baseUrl);
     expect(response.statusCode).toBe(200);
     expect(response.body.length).toBe(0);
   });
 
   test("Recipe test create", async () => {
-    const response = await request(app).post(base).send(testRecipe);
+    const response = await request(app).post(baseUrl).send(testRecipe);
     expect(response.statusCode).toBe(201);
     validateRecipeResponse(response, testRecipe);
     recipeId = response.body._id;
@@ -60,13 +62,13 @@ describe("Recipe Tests", () => {
 
   //after creation there is one document
   test("Recipe test get all", async () => {
-   const response = await request(app).get(base);
+   const response = await request(app).get(baseUrl);
    expect(response.statusCode).toBe(200);
    expect(response.body.length).toBe(1);
   });
 
   test("Recipe test get by id", async () => {
-    const response = await request(app).get(base + recipeId);
+    const response = await request(app).get(baseUrl + recipeId);
     expect(response.statusCode).toBe(200);
     validateRecipeResponse(response, testRecipe);
   });
@@ -79,41 +81,41 @@ describe("Recipe Tests", () => {
     testRecipe.tags = [{"name":"vegeterian"}];
     testRecipe.owner = "user2";
     testRecipe.likes = 5;
-    const response = await request(app).put(base + recipeId).send(testRecipe);
+    const response = await request(app).put(baseUrl + recipeId).send(testRecipe);
     expect(response.statusCode).toBe(200);
     validateRecipeResponse(response, testRecipe);
   });
 
   test("Recipe test get by user", async () => {
-    const response = await request(app).get(base + "user/" + testRecipe.owner);
+    const response = await request(app).get(baseUrl + "?user=" + testRecipe.owner);
     expect(response.statusCode).toBe(200);
     expect(response.body._id).toBe(recipeId);
   });
 
   test("Recipe test get by tag and title", async () => {
-    const response = await request(app).get(base + testRecipe.tags[0].name + "/" + testRecipe.title);
+    const response = await request(app).get(baseUrl + testRecipe.tags[0].name + "/" + testRecipe.title);
     expect(response.statusCode).toBe(200);
     expect(response.body._id).toBe(recipeId);
   });
 
   test("Recipe test create", async () => {
-    const response = await request(app).post(base).send(testRecipe2);
+    const response = await request(app).post(baseUrl).send(testRecipe2);
     expect(response.statusCode).toBe(201);
     validateRecipeResponse(response, testRecipe2);
     recipeId = response.body._id;
   });
 
   test("Recipe test get by user2", async () => {
-    const response = await request(app).get(base + "user/" + testRecipe2.owner);
+    const response = await request(app).get(baseUrl + "user/" + testRecipe2.owner);
     expect(response.statusCode).toBe(200);
     expect(response.body._id).toBe(recipeId);
     expect(response.body.length).toBe(1);
   });
 
   test("Recipe test delete", async () => {
-    const response = await request(app).delete(base + recipeId);
+    const response = await request(app).delete(baseUrl + recipeId);
     expect(response.statusCode).toBe(200);
-    const response2 = await request(app).get(base + recipeId);
+    const response2 = await request(app).get(baseUrl + recipeId);
     expect(response2.statusCode).toBe(404);
   });
 
