@@ -10,7 +10,7 @@ var recipeId: "";
 var base = "/recipe/";
 const testRecipe: IRecipe = {
   title: "hamburger",
-  image: "../burger.jpg",
+  image: "../images/burger.jpg",
   ingredients: [{"name":"meat"},{"name":"tomato"}],
   tags: [{"name":"gluten"}],
   owner: "user1",
@@ -19,7 +19,7 @@ const testRecipe: IRecipe = {
 
 const testRecipe2: IRecipe = {
   title: "pasta",
-  image: "../pasta.jpg",
+  image: "../images/pasta.jpg",
   ingredients: [{"name":"dough"},{"name":"olive oil"}],
   tags: [{"name":"lactose"}],
   owner: "user3",
@@ -74,7 +74,7 @@ describe("Recipe Tests", () => {
 
   test("Recipe test update", async () => {
     testRecipe.title = "pizza";
-    testRecipe.image = "../pizza.jpg";
+    testRecipe.image = "../images/pizza.jpg";
     testRecipe.ingredients = [{"name":"dough"},{"name":"tomato"}];
     testRecipe.tags = [{"name":"vegeterian"}];
     testRecipe.owner = "user2";
