@@ -5,6 +5,7 @@ import commentsModel from "../models/comment_model";
 import { Express } from "express";
 
 let app: Express;
+const baseUrl = "/comments";
 
 const testUser = {
   email: "test@user.com",
@@ -28,7 +29,7 @@ const testUser2 = {
   profile: "profile2",  
 };
 
-let accessToken: string;
+// let accessToken: string;
 
 
 beforeAll(async () => {
@@ -45,25 +46,25 @@ afterAll(async () => {
 
 let commentId = "";
 const testComment = {
-  comment: "Test title",
+  comment: "Test comment",
   recipeId: "123456",
   owner: "Hod",
 };
 
 const invalidComment = {
-  comment: "Test title",
+  comment: "Test comment",
 };
 
 describe("Commnents test suite", () => {
   test("Comment test get all", async () => {
-    const response = await request(app).get("/comments");
+    const response = await request(app).get(baseUrl);
     expect(response.statusCode).toBe(200);
     expect(response.body).toHaveLength(0);
   });
 
 
   test("Test Addding new comment", async () => {
-    const response = await request(app).post("/comments").send(testComment);
+    const response = await request(app).post(baseUrl).send(testComment);
     expect(response.statusCode).toBe(201);
     expect(response.body.comment).toBe(testComment.comment);
     expect(response.body.postId).toBe(testComment.recipeId);
@@ -72,31 +73,31 @@ describe("Commnents test suite", () => {
   });
 
   test("Test Addding invalid comment", async () => {
-    const response = await request(app).post("/comments").send(invalidComment);
+    const response = await request(app).post(baseUrl).send(invalidComment);
     expect(response.statusCode).not.toBe(201);
   });
 
   test("Test get all comments after adding", async () => {
-    const response = await request(app).get("/comments");
+    const response = await request(app).get(baseUrl);
     expect(response.statusCode).toBe(200);
     expect(response.body).toHaveLength(1);
   });
 
   test("Test get comment by owner", async () => {
-    const response = await request(app).get("/comments?owner=" + testComment.owner);
+    const response = await request(app).get(baseUrl+ "?owner=" + testComment.owner);
     expect(response.statusCode).toBe(200);
     expect(response.body).toHaveLength(1);
     expect(response.body[0].owner).toBe(testComment.owner);
   });
 
   test("Test get comment by id", async () => {
-    const response = await request(app).get("/comments/" + commentId);
+    const response = await request(app).get(baseUrl + commentId);
     expect(response.statusCode).toBe(200);
     expect(response.body._id).toBe(commentId);
   });
 
   test("Test get comment by id fail", async () => {
-    const response = await request(app).get("/comments/67447b032ce3164be7c4412d");
+    const response = await request(app).get(baseUrl +"/67447b032ce3164be7c4412d");
     expect(response.statusCode).toBe(404);
   });
 });
