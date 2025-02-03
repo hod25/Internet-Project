@@ -1,7 +1,5 @@
 import express from 'express';
 import mongoose from "mongoose";
-import recipeModel from './recipe_model';
-import tagModel from './tag_model';
 
 interface IRecipeTag extends mongoose.Document {
     recipe: mongoose.Schema.Types.ObjectId;

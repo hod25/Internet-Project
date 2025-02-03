@@ -7,7 +7,7 @@ import recipeModel, { IRecipe } from "../models/recipe_model";
 var app: Express;
 var recipeId: "";
 
-const baseUrl = "/recipe";
+const baseUrl = "/recipe/";
 const testRecipe: IRecipe = {
   title: "hamburger",
   image: "../images/burger.jpg",
@@ -68,7 +68,7 @@ describe("Recipe Tests", () => {
   });
 
   test("Recipe test get by id", async () => {
-    const response = await request(app).get(baseUrl + recipeId);
+    const response = await request(app).get(baseUrl + "?id="  + recipeId);
     expect(response.statusCode).toBe(200);
     validateRecipeResponse(response, testRecipe);
   });
@@ -81,19 +81,21 @@ describe("Recipe Tests", () => {
     testRecipe.tags = [{"name":"vegeterian"}];
     testRecipe.owner = "user2";
     testRecipe.likes = 5;
-    const response = await request(app).put(baseUrl + recipeId).send(testRecipe);
+    const response = await request(app).put(baseUrl + "?id=" + recipeId).send(testRecipe);
     expect(response.statusCode).toBe(200);
     validateRecipeResponse(response, testRecipe);
   });
 
   test("Recipe test get by user", async () => {
-    const response = await request(app).get(baseUrl + "?user=" + testRecipe.owner);
+    console.log(baseUrl + "user/" + "?user=" + testRecipe.owner)
+    const response = await request(app).get(baseUrl + "user/" + "?user=" + testRecipe.owner);
+    console.log(response.body);
     expect(response.statusCode).toBe(200);
-    expect(response.body._id).toBe(recipeId);
+    expect(response.body[0]._id).toBe(recipeId);
   });
 
   test("Recipe test get by tag and title", async () => {
-    const response = await request(app).get(baseUrl + testRecipe.tags[0].name + "/" + testRecipe.title);
+    const response = await request(app).get(baseUrl + "?tag="  + testRecipe.tags[0].name + "/?title=" + testRecipe.title);
     expect(response.statusCode).toBe(200);
     expect(response.body._id).toBe(recipeId);
   });
@@ -106,7 +108,7 @@ describe("Recipe Tests", () => {
   });
 
   test("Recipe test get by user2", async () => {
-    const response = await request(app).get(baseUrl + "user/" + testRecipe2.owner);
+    const response = await request(app).get(baseUrl + "user/?user=" + testRecipe2.owner);
     expect(response.statusCode).toBe(200);
     expect(response.body._id).toBe(recipeId);
     expect(response.body.length).toBe(1);
@@ -147,13 +149,24 @@ describe("Recipe Tests", () => {
 
   async function validateRecipeResponse(response: request.Response, testRecipe: IRecipe) {
     if (response.body) {
+      //console.log(response.body);
       const body = await parseBody(response.body);
-      expect(body.title).toBe(testRecipe.title);
-      expect(body.image).toBe(testRecipe.image);
-      expect(body.ingredients).toBe(testRecipe.ingredients);
-      expect(body.tags).toBe(testRecipe.tags);
-      expect(body.owner).toBe(testRecipe.owner);
-      expect(body.likes).toBe(testRecipe.likes);
+      if (!Array.isArray(body)) {
+        expect(body.title).toBe(testRecipe.title);
+        expect(body.image).toBe(testRecipe.image);
+        expect(body.ingredients).toBe(testRecipe.ingredients);
+        expect(body.tags).toBe(testRecipe.tags);
+        expect(body.owner).toBe(testRecipe.owner);
+        expect(body.likes).toBe(testRecipe.likes);
+      }
+      else {
+        expect(body[0].title).toBe(testRecipe.title);
+        expect(body[0].image).toBe(testRecipe.image);
+        expect(body[0].ingredients).toBe(testRecipe.ingredients);
+        expect(body[0].tags).toBe(testRecipe.tags);
+        expect(body[0].owner).toBe(testRecipe.owner);
+        expect(body[0].likes).toBe(testRecipe.likes);
+      }
     }
   }
 });
