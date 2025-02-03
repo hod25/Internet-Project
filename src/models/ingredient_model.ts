@@ -1,11 +1,11 @@
 import express from 'express';
 import mongoose from "mongoose";
 
-interface IIngridient extends mongoose.Document {
+interface IIngredient extends mongoose.Document {
     recipe: mongoose.Schema.Types.ObjectId;
     name: mongoose.Schema.Types.ObjectId;
 }
-const ingredientSchema = new mongoose.Schema<IIngridient>({
+const ingredientSchema = new mongoose.Schema<IIngredient>({
     recipe: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Recipe',
@@ -18,6 +18,6 @@ const ingredientSchema = new mongoose.Schema<IIngridient>({
 
 });
   
-const ingredientModel = mongoose.model<IIngridient>("RecipeTag", ingredientSchema);
+const ingredientModel = mongoose.model<IIngredient>("Ingredients", ingredientSchema);
   
 export default ingredientModel;

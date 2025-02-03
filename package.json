@@ -6,7 +6,7 @@
   "scripts": {
   "dev": "copy .env_dev .env && nodemon ./src/app.ts",
   "start": "copy .env_dev .env && tsc && node ./dist/app.js",
-  "test": "copy .env_test .env && tsc && jest --detectOpenHandles --forceExit --runInBand",
+  "test": "cls && copy .env_test .env && tsc && jest --detectOpenHandles --forceExit --runInBand",
   "testAuth": "jest --detectOpenHandles --forceExit auth.test.ts",
   "testPost": "jest --detectOpenHandles --forceExit posts.test.ts",
   "lint": "eslint . --ext .ts"

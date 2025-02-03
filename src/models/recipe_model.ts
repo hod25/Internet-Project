@@ -4,7 +4,7 @@ import IRecipe from "../models/recipe_model";
 export interface IRecipe {
   title: string;
   image: string;
-  ingredients: { name: string }[] ;
+  ingredients: string[] ;
   tags: { name: string }[];
   owner: string;
   likes: number;

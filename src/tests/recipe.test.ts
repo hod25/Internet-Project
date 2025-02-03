@@ -11,7 +11,7 @@ const baseUrl = "/recipe/";
 const testRecipe: IRecipe = {
   title: "hamburger",
   image: "../images/burger.jpg",
-  ingredients: [{"name":"meat"},{"name":"tomato"}],
+  ingredients: ["meat","tomato"],
   tags: [{"name":"gluten"}],
   owner: "user1",
   likes: 0,
@@ -20,7 +20,7 @@ const testRecipe: IRecipe = {
 const testRecipe2: IRecipe = {
   title: "pasta",
   image: "../images/pasta.jpg",
-  ingredients: [{"name":"dough"},{"name":"olive oil"}],
+  ingredients: ["dough","olive oil"],
   tags: [{"name":"lactose"}],
   owner: "user3",
   likes: 0,
@@ -77,7 +77,7 @@ describe("Recipe Tests", () => {
   test("Recipe test update", async () => {
     testRecipe.title = "pizza";
     testRecipe.image = "../images/pizza.jpg";
-    testRecipe.ingredients = [{"name":"dough"},{"name":"tomato"}];
+    testRecipe.ingredients = ["dough","tomato"];
     testRecipe.tags = [{"name":"vegeterian"}];
     testRecipe.owner = "user2";
     testRecipe.likes = 5;
