@@ -12,14 +12,37 @@ class RecipeController extends BaseController<IRecipe> {
         super(model);
     }
 
+    override async get(req: Request, res: Response) {
+        const filter = req.params._id;
+        try {
+            let recipes;
+            if (filter) {
+                recipes = await this.model.find({ _id: filter });
+            } else {
+                recipes = await this.model.find();
+            }
+            // שליפת הרכיבים לכל מתכון והמרת האובייקטים לשמות בלבד
+            const recipesWithIngredients = await Promise.all(
+                recipes.map(async (recipe) => {
+                    const ingredients = await ingredientModel.find({ recipe: recipe._id });
+                    const ingredientNames = ingredients.map((ing) => ing.name); // מחזיר רק שמות
+                    return { ...recipe.toObject(), ingredients: ingredientNames };
+                })
+            );
+
+            res.send(recipesWithIngredients);
+        } catch (error) {
+            res.status(400).json({ message: "Error retrieving recipes", error: (error as Error).message });
+        }
+    };
+
     override async create(req: Request, res: Response) {
         const body = req.body;
         const createdRecipe = await this.model.create(body);
         try {
             const { ingredients } = req.body;
             const recipeId = createdRecipe._id;
-            console.log(req);
-        
+
             // בדיקה שהנתונים תקינים
             if (!Array.isArray(ingredients) || ingredients.length === 0) {
                 res.status(400).json({ message: "Invalid ingredients array" });
@@ -45,7 +68,7 @@ class RecipeController extends BaseController<IRecipe> {
     };
 
     async getRecipeByUser(req: Request, res: Response) {
-        const userId = req.params.id;
+        const userId = req.params._id;
         try {
             const recipes = await this.model.find({ owner: userId });
             res.status(200).send(recipes);

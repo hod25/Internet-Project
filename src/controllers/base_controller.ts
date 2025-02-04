@@ -9,10 +9,10 @@ class BaseController<T> {
 
     //get all or get by id based on reqest params
     async get(req: Request, res: Response) {
-        const filter = req.query.owner;
+        const filter = req.query._id;
         try {
             if (filter) {
-                const item = await this.model.find({ owner: filter });
+                const item = await this.model.find({ _id: filter });
                 res.send(item);
             } else {
                 const items = await this.model.find();
@@ -39,7 +39,7 @@ class BaseController<T> {
     // };
 
     async update(req: Request, res: Response) {
-        const id = req.params.id;
+        const id = req.params._id;
         const body = req.body;
         try {
             const item = await this.model.findByIdAndUpdate(id, body, { new: true });
@@ -60,7 +60,7 @@ class BaseController<T> {
     };
 
     async delete(req: Request, res: Response) {
-        const id = req.params.id;
+        const id = req.params._id;
         try {
             const rs = await this.model.findByIdAndDelete(id);
             res.status(200).send(rs);

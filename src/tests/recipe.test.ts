@@ -3,6 +3,7 @@ import initApp from "../server";
 import mongoose from "mongoose";
 import { Express } from "express";
 import recipeModel, { IRecipe } from "../models/recipe_model";
+import ingredientModel from "../models/ingredient_model"
 
 var app: Express;
 var recipeId: "";
@@ -31,6 +32,7 @@ beforeAll(async () => {
   console.log("beforeAll");
   app = await initApp();
   await recipeModel.deleteMany();
+  await ingredientModel.deleteMany();
   //const response = await request(app).post("/auth/register").send(testUser);
   //const response2 = await request(app).post("/auth/login").send(testUser);
   //expect(response2.statusCode).toBe(200);
@@ -68,7 +70,7 @@ describe("Recipe Tests", () => {
   });
 
   test("Recipe test get by id", async () => {
-    const response = await request(app).get(baseUrl + "?id="  + recipeId);
+    const response = await request(app).get(baseUrl + "?_id="  + recipeId);
     expect(response.statusCode).toBe(200);
     validateRecipeResponse(response, testRecipe);
   });
@@ -81,15 +83,14 @@ describe("Recipe Tests", () => {
     testRecipe.tags = [{"name":"vegeterian"}];
     testRecipe.owner = "user2";
     testRecipe.likes = 5;
-    const response = await request(app).put(baseUrl + "?id=" + recipeId).send(testRecipe);
+    const response = await request(app).put(baseUrl + "?_id=" + recipeId).send(testRecipe);
     expect(response.statusCode).toBe(200);
     validateRecipeResponse(response, testRecipe);
   });
 
   test("Recipe test get by user", async () => {
-    console.log(baseUrl + "user/" + "?user=" + testRecipe.owner)
-    const response = await request(app).get(baseUrl + "user/" + "?user=" + testRecipe.owner);
-    console.log(response.body);
+    console.log(baseUrl + "user/?_id=" + testRecipe.owner)
+    const response = await request(app).get(baseUrl + "user/?_id=" + testRecipe.owner);
     expect(response.statusCode).toBe(200);
     expect(response.body[0]._id).toBe(recipeId);
   });
@@ -108,7 +109,7 @@ describe("Recipe Tests", () => {
   });
 
   test("Recipe test get by user2", async () => {
-    const response = await request(app).get(baseUrl + "user/?user=" + testRecipe2.owner);
+    const response = await request(app).get(baseUrl + "user/?_id=" + testRecipe2.owner);
     expect(response.statusCode).toBe(200);
     expect(response.body._id).toBe(recipeId);
     expect(response.body.length).toBe(1);
@@ -161,8 +162,9 @@ describe("Recipe Tests", () => {
       }
       else {
         expect(body[0].title).toBe(testRecipe.title);
+        console.log(body[0].ingredients)
         expect(body[0].image).toBe(testRecipe.image);
-        expect(body[0].ingredients).toBe(testRecipe.ingredients);
+        expect(body[0].ingredients).toStrictEqual(testRecipe.ingredients);
         expect(body[0].tags).toBe(testRecipe.tags);
         expect(body[0].owner).toBe(testRecipe.owner);
         expect(body[0].likes).toBe(testRecipe.likes);

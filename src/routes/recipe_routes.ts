@@ -14,21 +14,21 @@ import recipeController from "../controllers/recipe_controller";
 router.post("/", recipeController .create.bind(recipeController ));
 
 //update request to update a recipe by id 
-router.put("/:id", recipeController .update.bind(recipeController ));
+router.put("/:_id", recipeController.update.bind(recipeController ));
 
 //get request to getAll recipes ><
 router.get("/", recipeController .get.bind(recipeController ));
 
 //get request to get recipe by id ><
-router.get("/:id", recipeController .get.bind(recipeController ));
+router.get("/:_id", recipeController .get.bind(recipeController ));
 
 //get request to get by user id ><
-router.get("/user/:id", recipeController .getRecipeByUser.bind(recipeController ));
+router.get("/user/:_id", recipeController .getRecipeByUser.bind(recipeController ));
 
 //get request to by tag and title ><
 router.get("/:tag/:title", recipeController .getRecipeByTagTitle.bind(recipeController ));
 
 // delete request to delete a recipe by id ><
-router.delete("/:id", recipeController .delete.bind(recipeController ));
+router.delete("/:_id", recipeController .delete.bind(recipeController ));
 
 export default router;
