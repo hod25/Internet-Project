@@ -9,11 +9,14 @@ class BaseController<T> {
 
     //get all or get by id based on reqest params
     async get(req: Request, res: Response) {
-        const filter = req.query._id;
+        const filter = req.params._id;
         try {
             if (filter) {
                 const item = await this.model.find({ _id: filter });
-                res.send(item);
+                if (item)
+                    res.send(item);
+                else
+                    res.status(404)
             } else {
                 const items = await this.model.find();
                 res.send(items);
@@ -39,7 +42,7 @@ class BaseController<T> {
     // };
 
     async update(req: Request, res: Response) {
-        const id = req.params._id;
+        const id = req.body._id;
         const body = req.body;
         try {
             const item = await this.model.findByIdAndUpdate(id, body, { new: true });

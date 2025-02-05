@@ -26,9 +26,9 @@ router.get("/:_id", recipeController .get.bind(recipeController ));
 router.get("/user/:_id", recipeController .getRecipeByUser.bind(recipeController ));
 
 //get request to by tag and title ><
-router.get("/:tag/:title", recipeController .getRecipeByTagTitle.bind(recipeController ));
+router.get("/query", recipeController .getRecipeByTagTitle.bind(recipeController ));
 
 // delete request to delete a recipe by id ><
-router.delete("/:_id", recipeController .delete.bind(recipeController ));
+router.delete("/:_id", recipeController.delete.bind(recipeController ));
 
 export default router;

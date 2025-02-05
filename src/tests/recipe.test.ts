@@ -70,7 +70,7 @@ describe("Recipe Tests", () => {
   });
 
   test("Recipe test get by id", async () => {
-    const response = await request(app).get(baseUrl + "?_id="  + recipeId);
+    const response = await request(app).get(baseUrl + recipeId);
     expect(response.statusCode).toBe(200);
     validateRecipeResponse(response, testRecipe);
   });
@@ -83,20 +83,19 @@ describe("Recipe Tests", () => {
     testRecipe.tags = [{"name":"vegeterian"}];
     testRecipe.owner = "user2";
     testRecipe.likes = 5;
-    const response = await request(app).put(baseUrl + "?_id=" + recipeId).send(testRecipe);
+    const response = await request(app).put(baseUrl +recipeId).send(testRecipe);
     expect(response.statusCode).toBe(200);
     validateRecipeResponse(response, testRecipe);
   });
 
   test("Recipe test get by user", async () => {
-    console.log(baseUrl + "user/?_id=" + testRecipe.owner)
-    const response = await request(app).get(baseUrl + "user/?_id=" + testRecipe.owner);
+    const response = await request(app).get(baseUrl + "user/" + testRecipe.owner);
     expect(response.statusCode).toBe(200);
     expect(response.body[0]._id).toBe(recipeId);
   });
 
   test("Recipe test get by tag and title", async () => {
-    const response = await request(app).get(baseUrl + "?tag="  + testRecipe.tags[0].name + "/?title=" + testRecipe.title);
+    const response = await request(app).get(baseUrl + "/query").send({ tag: "vegan", title: "lactose" });
     expect(response.statusCode).toBe(200);
     expect(response.body._id).toBe(recipeId);
   });
@@ -109,7 +108,7 @@ describe("Recipe Tests", () => {
   });
 
   test("Recipe test get by user2", async () => {
-    const response = await request(app).get(baseUrl + "user/?_id=" + testRecipe2.owner);
+    const response = await request(app).get(baseUrl + "user/" + testRecipe2.owner);
     expect(response.statusCode).toBe(200);
     expect(response.body._id).toBe(recipeId);
     expect(response.body.length).toBe(1);
@@ -118,6 +117,7 @@ describe("Recipe Tests", () => {
   test("Recipe test delete", async () => {
     const response = await request(app).delete(baseUrl + recipeId);
     expect(response.statusCode).toBe(200);
+    console.log("boom")
     const response2 = await request(app).get(baseUrl + recipeId);
     expect(response2.statusCode).toBe(404);
   });
@@ -155,14 +155,13 @@ describe("Recipe Tests", () => {
       if (!Array.isArray(body)) {
         expect(body.title).toBe(testRecipe.title);
         expect(body.image).toBe(testRecipe.image);
-        expect(body.ingredients).toBe(testRecipe.ingredients);
+        expect(body.ingredients).toStrictEqual(testRecipe.ingredients);
         expect(body.tags).toBe(testRecipe.tags);
         expect(body.owner).toBe(testRecipe.owner);
         expect(body.likes).toBe(testRecipe.likes);
       }
       else {
         expect(body[0].title).toBe(testRecipe.title);
-        console.log(body[0].ingredients)
         expect(body[0].image).toBe(testRecipe.image);
         expect(body[0].ingredients).toStrictEqual(testRecipe.ingredients);
         expect(body[0].tags).toBe(testRecipe.tags);

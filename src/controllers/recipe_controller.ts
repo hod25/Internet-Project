@@ -21,54 +21,72 @@ class RecipeController extends BaseController<IRecipe> {
             } else {
                 recipes = await this.model.find();
             }
-            // שליפת הרכיבים לכל מתכון והמרת האובייקטים לשמות בלבד
-            const recipesWithIngredients = await Promise.all(
-                recipes.map(async (recipe) => {
-                    const ingredients = await ingredientModel.find({ recipe: recipe._id });
-                    const ingredientNames = ingredients.map((ing) => ing.name); // מחזיר רק שמות
-                    return { ...recipe.toObject(), ingredients: ingredientNames };
-                })
-            );
+            console.log(recipes);
+            
+            if (recipes.length==0){
+                res.status(404).send({ message: "No recipes found" });
+            }
+            else {    
+                // שליפת הרכיבים לכל מתכון והמרת האובייקטים לשמות בלבד
+                const recipesWithIngredients = await Promise.all(
+                    recipes.map(async (recipe) => {
+                        const ingredients = await ingredientModel.find({ recipe: recipe._id });
+                        const ingredientNames = ingredients.map((ing) => ing.name); // מחזיר רק שמות
+                        return { ...recipe.toObject(), ingredients: ingredientNames };
+                    })
+                );
 
-            res.send(recipesWithIngredients);
+                res.send(recipesWithIngredients);
+            }
         } catch (error) {
             res.status(400).json({ message: "Error retrieving recipes", error: (error as Error).message });
         }
     };
 
-    override async create(req: Request, res: Response) {
-        const body = req.body;
-        const createdRecipe = await this.model.create(body);
+    override async create(req: Request, res: Response): Promise<void> {
         try {
+            const body = req.body;
+            const createdRecipe = await this.model.create(body);
             const { ingredients } = req.body;
             const recipeId = createdRecipe._id;
-
+    
             // בדיקה שהנתונים תקינים
             if (!Array.isArray(ingredients) || ingredients.length === 0) {
                 res.status(400).json({ message: "Invalid ingredients array" });
+                return;
             }
             if (!recipeId) {
                 res.status(400).json({ message: "Missing recipeId" });
+                return;
             }
-        
+    
             // יצירת מערך של אובייקטים להוספה
             const ingredientDocs = ingredients.map((name: string) => ({
                 recipe: recipeId,
                 name
             }));
-            
+    
             // הוספת הנתונים ל-DB
             const savedIngredients = await ingredientModel.insertMany(ingredientDocs);
-        
-            res.status(201).send(savedIngredients);
+    
+            // הוספת המרכיבים למתכון שנשמר
+            const fullRecipe = {
+                ...createdRecipe.toObject(),
+                ingredients: savedIngredients.map((ing) => ing.name)
+            };
+    
+            res.status(201).json(fullRecipe);
+            return;
         } catch (error) {
-            console.error("Error adding ingredients:", error);
-            res.status(500).json({ message: "Internal Server Error", error });
+            console.error("Error adding recipe:", error);
+            res.status(500).json({ message: "Internal Server Error", error: (error as Error).message });
+            return;
         }
     };
+    
 
     async getRecipeByUser(req: Request, res: Response) {
-        const userId = req.params._id;
+        const userId = req.body._id;
         try {
             const recipes = await this.model.find({ owner: userId });
             res.status(200).send(recipes);
