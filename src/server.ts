@@ -48,9 +48,9 @@ const initApp = (): Promise<Express> => {
           app.use(bodyParser.json());
           app.use(bodyParser.urlencoded({ extended: true }));
           app.use("/recipe", recipe_routes);
-          app.use("/comments", comments_routes);
+          //app.use("/comments", comments_routes);
           // app.use("/auth", recipe_routes);
-          app.use("/users", users_routes);
+          //app.use("/users", users_routes);
           resolve(app);
         })
         .catch((err) => {
