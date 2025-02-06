@@ -194,9 +194,9 @@ class RecipeController extends BaseController<IRecipe> {
                 }
                 return { recipe: _id, tag: tag._id };
             }));
+            
             await recipeTagModel.insertMany(tagDocs);
-
-            res.status(200).json({ message: "Recipe updated successfully" }).send({...item?.toObject,ingredientDocs,tags});
+            res.status(200).json({ message: "Recipe updated successfully",...item?.toObject(), ingredients,tags});
         } catch (error) {
             res.status(400).json({ message: "Error updating recipe", error: (error as Error).message });
         }

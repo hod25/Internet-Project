@@ -96,8 +96,7 @@ describe("Recipe Tests", () => {
       "likes":testRecipe.likes
     }
     const response = await request(app).put(baseUrl +recipeId).send(item);
-    console.log(response.body);
-    
+        
     expect(response.statusCode).toBe(200);
     await validateRecipeResponse(response, testRecipe);
   });
