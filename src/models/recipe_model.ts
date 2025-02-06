@@ -1,11 +1,10 @@
 import mongoose from "mongoose";
-import IRecipe from "../models/recipe_model";
 
 export interface IRecipe {
   title: string;
   image: string;
   ingredients: string[] ;
-  tags: { name: string }[];
+  tags: string[];
   owner: string;
   likes: number;
 }

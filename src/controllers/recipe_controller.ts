@@ -1,6 +1,8 @@
 import recipeModel from "../models/recipe_model";
 import { IRecipe } from "../models/recipe_model";
 import ingredientModel from "../models/ingredient_model";
+import tagModel from "../models/tag_model";
+import recipeTagModel from "../models/recipeTag_model";
 import { Request, Response } from "express";
 import BaseController from "./base_controller";
 import { Model } from "mongoose";
@@ -21,22 +23,31 @@ class RecipeController extends BaseController<IRecipe> {
             } else {
                 recipes = await this.model.find();
             }
-            console.log(recipes);
             
             if (recipes.length==0){
                 res.status(404).send({ message: "No recipes found" });
             }
             else {    
-                // שליפת הרכיבים לכל מתכון והמרת האובייקטים לשמות בלבד
-                const recipesWithIngredients = await Promise.all(
+                const recipesWithDetails = await Promise.all(
                     recipes.map(async (recipe) => {
+                        // שליפת מרכיבים ויצירת מערך של שמות המרכיבים
                         const ingredients = await ingredientModel.find({ recipe: recipe._id });
-                        const ingredientNames = ingredients.map((ing) => ing.name); // מחזיר רק שמות
-                        return { ...recipe.toObject(), ingredients: ingredientNames };
+                        const ingredientNames = ingredients.map((ing) => ing.name);
+                
+                        // שליפת תגיות מתוך טבלת recipeTag
+                        const recipeTags = await recipeTagModel.find({ recipe: recipe._id }).select('tag'); // רק ObjectId של התגית
+                        const tagIds = recipeTags.map(rt => rt.tag); // שליפת כל ה-ObjectId של התגיות
+                
+                        // שליפת שמות התגיות לפי ה-ObjectIds
+                        const tags = await tagModel.find({ _id: { $in: tagIds } }).select('name'); // שליפת שמות התגיות
+                        const tagNames = tags.map(tag => tag.name);  // שליפת שמות התגיות מתוך התוצאה
+                
+                        // החזרת המתכון עם שמות המרכיבים ושמות התגיות
+                        return { ...recipe.toObject(), ingredients: ingredientNames, tags: tagNames };
                     })
                 );
 
-                res.send(recipesWithIngredients);
+                res.send(recipesWithDetails);
             }
         } catch (error) {
             res.status(400).json({ message: "Error retrieving recipes", error: (error as Error).message });
@@ -47,10 +58,9 @@ class RecipeController extends BaseController<IRecipe> {
         try {
             const body = req.body;
             const createdRecipe = await this.model.create(body);
-            const { ingredients } = req.body;
+            const { ingredients, tags } = req.body;
             const recipeId = createdRecipe._id;
     
-            // בדיקה שהנתונים תקינים
             if (!Array.isArray(ingredients) || ingredients.length === 0) {
                 res.status(400).json({ message: "Invalid ingredients array" });
                 return;
@@ -60,19 +70,27 @@ class RecipeController extends BaseController<IRecipe> {
                 return;
             }
     
-            // יצירת מערך של אובייקטים להוספה
             const ingredientDocs = ingredients.map((name: string) => ({
                 recipe: recipeId,
                 name
             }));
     
-            // הוספת הנתונים ל-DB
             const savedIngredients = await ingredientModel.insertMany(ingredientDocs);
     
-            // הוספת המרכיבים למתכון שנשמר
+            const tagDocs = await Promise.all(tags.map(async (tagName: string) => {
+                let tag = await tagModel.findOne({ name: tagName });
+                if (!tag) {
+                    tag = await tagModel.create({ name: tagName });
+                }
+                return { recipe: recipeId, tag: tag._id };
+            }));
+    
+            await recipeTagModel.insertMany(tagDocs);
+    
             const fullRecipe = {
                 ...createdRecipe.toObject(),
-                ingredients: savedIngredients.map((ing) => ing.name)
+                ingredients: savedIngredients.map((ing) => ing.name),
+                tags
             };
     
             res.status(201).json(fullRecipe);
@@ -86,7 +104,7 @@ class RecipeController extends BaseController<IRecipe> {
     
 
     async getRecipeByUser(req: Request, res: Response) {
-        const userId = req.body._id;
+        const userId = req.params._id;
         try {
             const recipes = await this.model.find({ owner: userId });
             res.status(200).send(recipes);
@@ -98,13 +116,52 @@ class RecipeController extends BaseController<IRecipe> {
     async getRecipeByTagTitle(req: Request, res: Response) {
         const { tag, title } = req.params;
         try {
-            const recipes = await this.model.find({
-                "tags.name": tag,
-                title: title
-            });
+            const recipes = await this.model.find({ title, tags: tag });
             res.status(200).send(recipes);
         } catch (error) {
             res.status(400).send(error);
+        }
+    }
+
+    override async delete(req: Request, res: Response) {
+        const id = req.params._id;
+        try {
+            const recipe = await this.model.findByIdAndDelete(id);
+            if (!recipe) {
+                res.status(404).json({ message: "Recipe not found" });
+                return;
+            }
+            await ingredientModel.deleteMany({ recipe: id });
+            await recipeTagModel.deleteMany({ recipe: id });
+            res.status(200).json({ message: "Recipe deleted successfully" });
+        } catch (error) {
+            res.status(400).json({ message: "Error deleting recipe", error: (error as Error).message });
+        }
+    }
+    
+    override async update(req: Request, res: Response) {
+        try {
+            const { _id, ingredients, tags } = req.body;
+            const body = req.body;
+            const item = await this.model.findByIdAndUpdate(_id, body, { new: true });
+            
+            await ingredientModel.deleteMany({ recipe: _id });
+            const ingredientDocs = ingredients.map((name: string) => ({ recipe: _id, name }));
+            await ingredientModel.insertMany(ingredientDocs);
+            
+            await recipeTagModel.deleteMany({ recipe: _id });
+            const tagDocs = await Promise.all(tags.map(async (tagName: string) => {
+                let tag = await tagModel.findOne({ name: tagName });
+                if (!tag) {
+                    tag = await tagModel.create({ name: tagName });
+                }
+                return { recipe: _id, tag: tag._id };
+            }));
+            await recipeTagModel.insertMany(tagDocs);
+
+            res.status(200).json({ message: "Recipe updated successfully" }).send({...item?.toObject,ingredientDocs,tags});
+        } catch (error) {
+            res.status(400).json({ message: "Error updating recipe", error: (error as Error).message });
         }
     }
 }
