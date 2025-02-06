@@ -83,7 +83,7 @@ describe("Recipe Tests", () => {
     testRecipe.title = "pizza";
     testRecipe.image = "../images/pizza.jpg";
     testRecipe.ingredients = ["dough","tomato"];
-    testRecipe.tags = ["vegeterian"];
+    testRecipe.tags = ["vegeterian","eggs"];
     testRecipe.owner = "user2";
     testRecipe.likes = 5;
     const item = {
@@ -96,6 +96,8 @@ describe("Recipe Tests", () => {
       "likes":testRecipe.likes
     }
     const response = await request(app).put(baseUrl +recipeId).send(item);
+    console.log(response.body);
+    
     expect(response.statusCode).toBe(200);
     await validateRecipeResponse(response, testRecipe);
   });
@@ -107,9 +109,9 @@ describe("Recipe Tests", () => {
   });
 
   test("Recipe test get by tag and title", async () => {
-    const response = await request(app).get(baseUrl + "/query").send({ tag: "vegan", title: "lactose" });
+    const response = await request(app).get(baseUrl + "search?tags=vegeterian,eggs&title=pizza");
     expect(response.statusCode).toBe(200);
-    expect(response.body._id).toBe(recipeId);
+    expect(response.body[0]._id).toBe(recipeId);
   });
 
   test("Recipe test create", async () => {
@@ -122,7 +124,6 @@ describe("Recipe Tests", () => {
   test("Recipe test get by user2", async () => {
     const response = await request(app).get(baseUrl + "user/" + testRecipe2.owner);
     expect(response.statusCode).toBe(200);
-    console.log(response.body)
     expect(response.body[0]._id).toBe(recipeId);
     expect(response.body.length).toBe(1);
   });

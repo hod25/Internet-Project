@@ -111,17 +111,54 @@ class RecipeController extends BaseController<IRecipe> {
         } catch (error) {
             res.status(400).send(error);
         }
-    }
+    };
 
-    async getRecipeByTagTitle(req: Request, res: Response) {
-        const { tag, title } = req.params;
+    async getRecipeByTagsAndTitle(req: Request, res: Response) {
+        const { tags, title } = req.query;
         try {
-            const recipes = await this.model.find({ title, tags: tag });
+            const tagNames = tags ? (tags as string).split(',').filter(Boolean) : [];
+            let tagIds: string[] = [];
+    
+            if (tagNames.length > 0) {
+                const tagDocs = await tagModel.find({ name: { $in: tagNames } });
+                if (tagDocs.length === 0) {
+                    res.status(404).send({ message: "No tags found" });
+                    return;
+                }
+                tagIds = tagDocs.map(tag => tag._id.toString());
+            }
+    
+            let recipeIds: string[] = [];
+            if (tagIds.length > 0) {
+                const recipeTagDocs = await recipeTagModel.find({ tag: { $in: tagIds } });
+                recipeIds = recipeTagDocs.map(rt => rt.recipe.toString());
+            }
+    
+            const query: any = {};
+            if (title) {
+                query.title = title;
+            }
+            if (recipeIds.length > 0) {
+                query._id = { $in: recipeIds };
+            }
+    
+            if (!title && tagIds.length === 0) {
+                const recipes = await recipeModel.find();
+                res.status(200).send(recipes);
+            }
+    
+            const recipes = await recipeModel.find(query);
+            if (recipes.length === 0) {
+                res.status(404).send({ message: "No recipes found" });
+                return;
+            }
+    
             res.status(200).send(recipes);
         } catch (error) {
             res.status(400).send(error);
         }
     }
+    
 
     override async delete(req: Request, res: Response) {
         const id = req.params._id;
@@ -137,7 +174,7 @@ class RecipeController extends BaseController<IRecipe> {
         } catch (error) {
             res.status(400).json({ message: "Error deleting recipe", error: (error as Error).message });
         }
-    }
+    };
     
     override async update(req: Request, res: Response) {
         try {
@@ -163,7 +200,7 @@ class RecipeController extends BaseController<IRecipe> {
         } catch (error) {
             res.status(400).json({ message: "Error updating recipe", error: (error as Error).message });
         }
-    }
+    };
 }
 
 const recipeController = new RecipeController(recipeModel);
