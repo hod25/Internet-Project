@@ -21,7 +21,7 @@ afterAll((done) => {
   done();
 });
 
-const baseUrl = "/auth/";
+const baseUrl = "/auth";
 
 type User = IUser & {
   accessToken?: string,
@@ -57,7 +57,7 @@ describe("Auth Tests", () => {
     });
     expect(response.statusCode).not.toBe(200);
     const response2 = await request(app).post(baseUrl + "/register").send({
-      email: "",
+      email: "test@example.com",
       password: "sdfsd",
     });
     expect(response2.statusCode).not.toBe(200);

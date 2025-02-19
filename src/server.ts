@@ -1,5 +1,5 @@
 import express, { Express } from "express";
-const app = express();
+import cors from "cors"; // הוספת CORS
 import dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
@@ -10,6 +10,19 @@ import comments_routes from "./routes/comments_route";
 import users_routes from "./routes/users.routes";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
+
+const app = express();
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+// הפעלת CORS
+app.use(
+  cors({
+    origin: "http://localhost:5173", // רק ה-Frontend שלך יורשה לבצע בקשות
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
 
 // Swagger configuration
 const swaggerOptions = {
@@ -49,7 +62,7 @@ const initApp = (): Promise<Express> => {
           app.use(bodyParser.urlencoded({ extended: true }));
           app.use("/recipe", recipe_routes);
           app.use("/comments", comments_routes);
-          // app.use("/auth", recipe_routes);
+          app.use("/auth", recipe_routes);
           app.use("/users", users_routes);
           resolve(app);
         })

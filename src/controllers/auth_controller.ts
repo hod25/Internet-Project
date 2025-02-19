@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Document } from 'mongoose';
 
+
 const register = async (req: Request, res: Response) => {
     try {
         const password = req.body.password;
@@ -28,26 +29,16 @@ const generateToken = (userId: string): tTokens | null => {
     if (!process.env.TOKEN_SECRET) {
         return null;
     }
-    // generate token
-    const random = Math.random().toString();
-    const accessToken = jwt.sign({
-        _id: userId,
-        random: random
-    },
-        process.env.TOKEN_SECRET,
-        { expiresIn: process.env.TOKEN_EXPIRES });
+    // generate token /// need to change the secret in env
+    const accessToken = jwt.sign({ _id: userId }, process.env.TOKEN_SECRET, { expiresIn: '15m' });
+    const refreshToken = jwt.sign({ _id: userId }, process.env.TOKEN_SECRET, { expiresIn: '7d' });
 
-    const refreshToken = jwt.sign({
-        _id: userId,
-        random: random
-    },
-        process.env.TOKEN_SECRET,
-        { expiresIn: process.env.REFRESH_TOKEN_EXPIRES });
     return {
         accessToken: accessToken,
         refreshToken: refreshToken
     };
 };
+
 const login = async (req: Request, res: Response) => {
     try {
         const user = await userModel.findOne({ email: req.body.email });

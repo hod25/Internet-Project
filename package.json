@@ -1,11 +1,12 @@
 {
-  "name": "Internet-Project",
+  "name": "internetproject",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
   "scripts": {
+    "build": "tsc",
     "dev": "copy .env_dev .env && nodemon ./src/app.ts",
-    "start": "copy .env_dev .env && tsc && node ./dist/app.js",
+    "start": "copy .env_dev .env && tsc && node ./src/app.ts",
     "test": "cls && copy .env_test .env && tsc && jest --detectOpenHandles --forceExit --runInBand",
     "testAuth": "jest --detectOpenHandles --forceExit auth.test.ts",
     "testPost": "jest --detectOpenHandles --forceExit posts.test.ts",
@@ -15,14 +16,20 @@
   "license": "ISC",
   "dependencies": {
     "@types/mongoose": "^5.11.96",
+    "@types/react": "^19.0.8",
+    "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
     "express": "^4.21.2",
     "flatted": "^3.3.2",
     "jsonwebtoken": "^9.0.2",
+    "jwt-decode": "^4.0.0",
     "mongoose": "^8.9.6",
-    "multer": "^1.4.5-lts.1"
+    "multer": "^1.4.5-lts.1",
+    "react": "^19.0.0",
+    "react-router-dom": "^7.1.5"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -48,7 +55,7 @@
     "swagger-ui-express": "^5.0.1",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.3"
   },
   "keywords": []
 }
