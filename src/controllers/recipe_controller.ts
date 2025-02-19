@@ -7,9 +7,7 @@ import { Request, Response } from "express";
 import BaseController from "./base_controller";
 import { Model } from "mongoose";
 
-
 class RecipeController extends BaseController<IRecipe> {
-
     constructor(model: Model<IRecipe>) {
         super(model);
     }
@@ -52,7 +50,7 @@ class RecipeController extends BaseController<IRecipe> {
         } catch (error) {
             res.status(400).json({ message: "Error retrieving recipes", error: (error as Error).message });
         }
-    };
+    }
 
     override async create(req: Request, res: Response): Promise<void> {
         try {
@@ -100,8 +98,7 @@ class RecipeController extends BaseController<IRecipe> {
             res.status(500).json({ message: "Internal Server Error", error: (error as Error).message });
             return;
         }
-    };
-    
+    }
 
     async getRecipeByUser(req: Request, res: Response) {
         const userId = req.params._id;
@@ -111,7 +108,7 @@ class RecipeController extends BaseController<IRecipe> {
         } catch (error) {
             res.status(400).send(error);
         }
-    };
+    }
 
     async getRecipeByTagsAndTitle(req: Request, res: Response) {
         const { tags, title } = req.query;
@@ -158,7 +155,6 @@ class RecipeController extends BaseController<IRecipe> {
             res.status(400).send(error);
         }
     }
-    
 
     override async delete(req: Request, res: Response) {
         const id = req.params._id;
@@ -174,7 +170,7 @@ class RecipeController extends BaseController<IRecipe> {
         } catch (error) {
             res.status(400).json({ message: "Error deleting recipe", error: (error as Error).message });
         }
-    };
+    }
     
     override async update(req: Request, res: Response) {
         try {
@@ -200,8 +196,18 @@ class RecipeController extends BaseController<IRecipe> {
         } catch (error) {
             res.status(400).json({ message: "Error updating recipe", error: (error as Error).message });
         }
-    };
+    }
+
+    async getRecipes(req: Request, res: Response) {
+        try {
+            const recipes = await this.model.find();
+            res.status(200).json(recipes);
+        } catch (error) {
+            res.status(400).json({ message: "Error retrieving recipes", error: (error as Error).message });
+        }
+    }
 }
 
 const recipeController = new RecipeController(recipeModel);
+
 export default recipeController;

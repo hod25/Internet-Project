@@ -12,6 +12,7 @@ type User = IUser & {
   accessToken?: string,
   refreshToken?: string
 };
+
 const testUser: User = {
   email: "test@user.com",
   password: "testpassword",

@@ -6,10 +6,10 @@ export interface IUser {
   name: string;
   last_name: string;
   background: string;
-  _id?: string;//לא צריך?
-  // refreshToken?: string[];
+  _id?: string;
+  refreshToken?: string[];
   image?: string;
-  tag?: string,//?-?
+  tag?: string,
   profile?: string,
 }
 
@@ -47,10 +47,10 @@ const userSchema = new mongoose.Schema<IUser>({
     type: String,
     default: "",
   },
-  // refreshToken: {
-  //   type: [String],
-  //   default: [],
-  // }
+  refreshToken: {
+    type: [String],
+    default: [],
+  }
 });
 
 const userModel = mongoose.model<IUser>("Users", userSchema);
