@@ -15,6 +15,16 @@ class users_controller<userModel> extends BaseController<userModel> {
             res.status(400).send(error);
         }
     }
+    async register(req: Request, res: Response) {
+        try {
+            const item = new this.model(req.body);
+            await item.save();
+            res.send(item);
+        } catch (error) {
+            res.status(400).send(error);
+
+        }
+    }
 }
 
 const userscontroller = new users_controller(userModel);

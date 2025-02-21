@@ -10,6 +10,8 @@ import usersController from "../controllers/user_controller";
 *   description: The User API
 */
 
+router.post("/register" , usersController.register.bind(usersController));
+
 router.get("/", usersController.get.bind(usersController));
 
 router.get("/:id", usersController.get.bind(usersController));

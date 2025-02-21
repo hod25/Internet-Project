@@ -1,5 +1,5 @@
 import express, { Express } from "express";
-import cors from "cors"; // הוספת CORS
+import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
@@ -12,13 +12,10 @@ import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 
 const app = express();
-const googleClientId = process.env.GOOGLE_CLIENT_ID;
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
-// הפעלת CORS
 app.use(
   cors({
-    origin: "http://localhost:5173", // רק ה-Frontend שלך יורשה לבצע בקשות
+    origin: "http://localhost:5173", 
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type"],
   })
