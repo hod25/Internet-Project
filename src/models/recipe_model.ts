@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 
 export interface IRecipe {
   title: string;
-  image: string;
-  ingredients: string[] ;
-  tags: string[];
+  image?: string;
+  ingredients: string[]; // לוודא שזה Array
+  tags?: string[];
   owner: string;
   likes: number;
 }
@@ -16,16 +16,17 @@ const recipeSchema = new mongoose.Schema<IRecipe>({
   },
   image: {
     type: String,
-    required:  false,
+    required: false,
   },
-  // ingredients: {
-  //   type: String,
-  //   required: true,
-  // },
-  // tags: {
-  //   type: String,
-  //   required: true,
-  // },
+  ingredients: {
+    type: [String], // שינוי לסוג נכון
+    required: true,
+  },
+  tags: {
+    type: [String], // שינוי לסוג נכון
+    required: false,
+    default: [], // הוספת ערך ברירת מחדל כדי למנוע שגיאה
+  },
   owner: {
     type: String,
     required: true,
@@ -33,6 +34,7 @@ const recipeSchema = new mongoose.Schema<IRecipe>({
   likes: {
     type: Number,
     required: true,
+    default: 0, // למנוע בעיות אם לא נשלח ערך
   },
 });
 
