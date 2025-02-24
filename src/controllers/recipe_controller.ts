@@ -54,15 +54,9 @@ class RecipeController extends BaseController<IRecipe> {
 
     override async create(req: Request, res: Response): Promise<void> {
         try {
-            const { title, ingredients, likes, owner, tags } = req.body; // Add tags to destructuring
-            const image = req.file?.path;
-
-            if (!title || !ingredients || !likes || !owner) {
-                res.status(400).json({ message: "All fields are required." });
-                return;
-            }
-
-            const createdRecipe = await this.model.create({ title, ingredients, likes, owner, image });
+            const body = req.body;
+            const createdRecipe = await this.model.create(body);
+            const { ingredients, tags } = req.body;
             const recipeId = createdRecipe._id;
     
             if (!Array.isArray(ingredients) || ingredients.length === 0) {
@@ -98,9 +92,11 @@ class RecipeController extends BaseController<IRecipe> {
             };
     
             res.status(201).json(fullRecipe);
+            return;
         } catch (error) {
             console.error("Error adding recipe:", error);
             res.status(500).json({ message: "Internal Server Error", error: (error as Error).message });
+            return;
         }
     }
 
