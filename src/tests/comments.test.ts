@@ -67,7 +67,7 @@ describe("Commnents test suite", () => {
     const response = await request(app).post(baseUrl).send(testComment);
     expect(response.statusCode).toBe(201);
     expect(response.body.comment).toBe(testComment.comment);
-    expect(response.body.postId).toBe(testComment.recipeId);
+    expect(response.body.recipeId).toBe(testComment.recipeId);
     expect(response.body.owner).toBe(testComment.owner);
     commentId = response.body._id;
   });
@@ -91,8 +91,9 @@ describe("Commnents test suite", () => {
   });
 
   test("Test get comment by id", async () => {
-    const response = await request(app).get(baseUrl + commentId);
-    expect(response.statusCode).toBe(200);
+    console.log(commentId);
+    const response = await request(app).get(baseUrl +"/" + commentId);
+    expect(response.statusCode).toBe(200);    
     expect(response.body._id).toBe(commentId);
   });
 

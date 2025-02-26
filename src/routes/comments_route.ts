@@ -9,9 +9,9 @@ import commentsController from "../controllers/comment_controller";
 *   description: The Comments API
 */
 
-router.get("/", commentsController.get.bind(commentsController));
+router.get("/:_id", commentsController.get.bind(commentsController));
 
-router.get("/:id", commentsController.get.bind(commentsController));
+router.get("/", commentsController.get.bind(commentsController));
 
 router.post("/", commentsController.create.bind(commentsController));
 

@@ -12,11 +12,11 @@ class BaseController<T> {
         const filter = req.params._id;
         try {
             if (filter) {
-                const item = await this.model.find({ _id: filter });
+                const item = await this.model.findOne({ _id: filter });
                 if (item)
                     res.send(item);
                 else
-                    res.status(404)
+                    res.status(404).send({ message: "No items found" });
             } else {
                 const items = await this.model.find();
                 res.send(items);
