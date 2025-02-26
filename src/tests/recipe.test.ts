@@ -26,7 +26,7 @@ const testRecipe2: IRecipe = {
   ingredients: ["dough","olive oil"],
   tags: ["lactose"],
   owner: "user3",
-  likes: 0,
+  likes: 0
 }
 
 

@@ -1,18 +1,19 @@
 import request from "supertest";
 import initApp from "../server";
 import mongoose from "mongoose";
-import postModel from "../models/recipe_model";
 import { Express } from "express";
 import userModel, { IUser } from "../models/users_model";
-import recipeModel from "../models/recipe_model";
+import tagModel from "../models/tag_model";
+import userTagModel from "../models/userTag_model";
 
 var app: Express;
 
 beforeAll(async () => {
   console.log("beforeAll");
   app = await initApp();
+  await userTagModel.deleteMany();
   await userModel.deleteMany();
-  await recipeModel.deleteMany();
+  await tagModel.deleteMany();
 });
 
 afterAll((done) => {
@@ -35,15 +36,16 @@ const testUser: User = {
   last_name: "last1",
   background: "background1",
   image: "image1",
-  tag: "tag1",
+  tags: ["tag1"],
   profile: "profile1",
 }
+
 
 
 describe("Auth Tests", () => {
   test("Auth test register", async () => {
     const response = await request(app).post(baseUrl + "/register").send(testUser);
-    expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(201);
   });
 
   test("Auth test register fail", async () => {
@@ -100,18 +102,21 @@ describe("Auth Tests", () => {
   });
 
   test("Auth test me", async () => {
-    const response = await request(app).post("/posts").send({
+    const response = await request(app).post("/recipe").send({
       title: "Test Post",
       content: "Test Content",
       owner: "sdfSd",
     });
     expect(response.statusCode).not.toBe(201);
-    const response2 = await request(app).post("/posts").set(
+    const response2 = await request(app).post("/recipe").set(
       { authorization: "JWT " + testUser.accessToken }
     ).send({
-      title: "Test Post",
-      content: "Test Content",
-      owner: "sdfSd",
+        title: "pasta",
+        image: "../images/pasta.jpg",
+        ingredients: ["dough","olive oil"],
+        tags: ["lactose"],
+        owner: "user1",
+        likes: 0
     });
     expect(response2.statusCode).toBe(201);
   });
@@ -187,12 +192,15 @@ describe("Auth Tests", () => {
     expect(response3.statusCode).toBe(200);
     testUser.accessToken = response3.body.accessToken;
 
-    const response4 = await request(app).post("/posts").set(
+    const response4 = await request(app).post("/recipe").set(
       { authorization: "JWT " + testUser.accessToken }
     ).send({
-      title: "Test Post",
-      content: "Test Content",
-      owner: "sdfSd",
+        title: "hasa",
+        image: "../images/pasta.jpg",
+        ingredients: ["hasa"],
+        tags: ["hasa"],
+        owner: "user1",
+        likes: 0
     });
     expect(response4.statusCode).toBe(201);
   });

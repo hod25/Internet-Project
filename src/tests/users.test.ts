@@ -20,8 +20,8 @@ const testUser: User = {
   last_name: "last1",
   background: "background1",
   image: "image1",
-  tag: "tag1",
-  profile: "profile1",
+  tags: ["tag1"],
+  profile: "profile1"
 }
 const testUser2: User = {
     email: "galgadot@user.com",
@@ -30,7 +30,7 @@ const testUser2: User = {
     last_name: "gadot",
     background: "background2",
     image: "image2",
-    tag: "tag2",
+    tags: ["tag2"],
     profile: "profile2",
   }
 
@@ -55,7 +55,7 @@ describe("Users Tests", () => {
 
   test("Test Create User", async () => {
     const response = await request(app).post("/auth/register").send(testUser);
-    expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(201);
   });
 
   test("Test get user by email", async () => {
@@ -74,7 +74,7 @@ describe("Users Tests", () => {
 
   test("Test Create User 2", async () => {
     const response = await request(app).post("/auth/register").send(testUser2);
-    expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(201);
   });
 
   test("Test get all 2", async () => {
@@ -92,10 +92,7 @@ describe("Users Tests", () => {
 
   test("Test Create User fail", async () => {
     const response = await request(app).post("/auth/register")
-      .set({ authorization: "JWT " + testUser.accessToken })
-      .send({
-        email: "test@mail",
-      });
+      .send(testUser2);
     expect(response.statusCode).toBe(400);
   });
 });

@@ -9,7 +9,7 @@ export interface IUser {
   _id?: string;
   refreshToken?: string[];
   image?: string;
-  tag?: string,
+  tags?: string[],
   profile?: string,
 }
 
@@ -33,13 +33,9 @@ const userSchema = new mongoose.Schema<IUser>({
   },
   background: {
     type: String,
-    required: true,
-  },
-  image: {
-    type: String,
     default: "",
   },
-  tag: {
+  image: {
     type: String,
     default: "",
   },

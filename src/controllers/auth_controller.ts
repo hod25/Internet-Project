@@ -1,22 +1,59 @@
 import { NextFunction, Request, Response } from 'express';
 import userModel, { IUser } from '../models/users_model';
+import userTagModel from '../models/userTag_model';
+import tagModel from "../models/tag_model";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Document } from 'mongoose';
 
 
-const register = async (req: Request, res: Response) => {
+
+const register = async (req: Request, res: Response): Promise<void> => {
     try {
+        const existingUser = await userModel.findOne({ email: req.body.email });
+        if (existingUser) {
+            res.status(400).json({ message: "Email already exists" });
+            return;
+        }
+
         const password = req.body.password;
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
+
         const user = await userModel.create({
             email: req.body.email,
             password: hashedPassword,
+            name: req.body.name,
+            last_name: req.body.last_name,
+            background: req.body.background,
+            image: req.body.image,
+            profile: req.body.profile
         });
-        res.status(200).send(user);
-    } catch (err) {
-        res.status(400).send(err);
+
+        const tags = req.body.tags;
+        const userId = user._id;
+
+        // יצירת תגיות אם הן לא קיימות ושיוך למשתמש
+        const tagDocs = await Promise.all(tags.map(async (tagName: string) => {
+            let tag = await tagModel.findOne({ name: tagName });
+            if (!tag) {
+                tag = await tagModel.create({ name: tagName });
+            }
+            return { user: userId, tag: tag._id };
+        }));
+
+        await userTagModel.insertMany(tagDocs);
+
+        const fullUser = {
+            ...user.toObject(),
+            tags
+        };
+
+        res.status(201).json(fullUser);
+        return;
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error", error: (error as Error).message });
+        return;
     }
 };
 
@@ -26,13 +63,26 @@ type tTokens = {
 }
 
 const generateToken = (userId: string): tTokens | null => {
+
     if (!process.env.TOKEN_SECRET) {
         return null;
     }
-    // generate token /// need to change the secret in env
-    const accessToken = jwt.sign({ _id: userId }, process.env.TOKEN_SECRET, { expiresIn: '15m' });
-    const refreshToken = jwt.sign({ _id: userId }, process.env.TOKEN_SECRET, { expiresIn: '7d' });
+    // generate token
+    const random = Math.random().toString();
 
+    const accessToken = jwt.sign({
+        _id: userId,
+        random: random
+    },
+        process.env.TOKEN_SECRET,
+        { expiresIn: parseInt(process.env.TOKEN_EXPIRATION||'1') });
+
+    const refreshToken = jwt.sign({
+        _id: userId,
+        random: random
+    },
+        process.env.TOKEN_SECRET,
+        { expiresIn: parseInt(process.env.REFRESH_TOKEN_EXPIRATION||'1') });
     return {
         accessToken: accessToken,
         refreshToken: refreshToken
