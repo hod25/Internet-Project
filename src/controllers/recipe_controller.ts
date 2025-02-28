@@ -54,27 +54,39 @@ class RecipeController extends BaseController<IRecipe> {
 
     override async create(req: Request, res: Response): Promise<void> {
         try {
-            const body = req.body;
-            const createdRecipe = await this.model.create(body);
-            const { ingredients, tags } = req.body;
+            // המרת JSON מחרוזת למערכים אמיתיים
+            const ingredients = JSON.parse(req.body.ingredients || "[]");
+            const tags = JSON.parse(req.body.tags || "[]");
+    
+            // בדיקות תקינות
+            if (!Array.isArray(ingredients) || ingredients.length === 0) {
+                res.status(400).json({ message: "Invalid or missing ingredients array" });
+                return;
+            }
+            if (!Array.isArray(tags) || tags.length === 0) {
+                res.status(400).json({ message: "Invalid or missing tags array" });
+                return;
+            }
+    
+            // קבלת המשתמש המחובר (במקום לשלוח owner מהפרונט)
+            const owner =  "guest";  // 👈 צריך authMiddleware        //req.user?.id ||
+    
+            // יצירת המתכון
+            const createdRecipe = await this.model.create({
+                title: req.body.title,
+                likes: Number(req.body.likes) || 0, // המרה למספר
+                owner,
+            });
             const recipeId = createdRecipe._id;
     
-            if (!Array.isArray(ingredients) || ingredients.length === 0) {
-                res.status(400).json({ message: "Invalid ingredients array" });
-                return;
-            }
-            if (!recipeId) {
-                res.status(400).json({ message: "Missing recipeId" });
-                return;
-            }
-    
+            // שמירת מרכיבים
             const ingredientDocs = ingredients.map((name: string) => ({
                 recipe: recipeId,
                 name
             }));
-    
             const savedIngredients = await ingredientModel.insertMany(ingredientDocs);
     
+            // שמירת תגיות
             const tagDocs = await Promise.all(tags.map(async (tagName: string) => {
                 let tag = await tagModel.findOne({ name: tagName });
                 if (!tag) {
@@ -82,23 +94,21 @@ class RecipeController extends BaseController<IRecipe> {
                 }
                 return { recipe: recipeId, tag: tag._id };
             }));
-    
             await recipeTagModel.insertMany(tagDocs);
     
+            // החזרת המתכון ללקוח
             const fullRecipe = {
                 ...createdRecipe.toObject(),
                 ingredients: savedIngredients.map((ing) => ing.name),
                 tags
             };
-    
             res.status(201).json(fullRecipe);
-            return;
         } catch (error) {
             console.error("Error adding recipe:", error);
             res.status(500).json({ message: "Internal Server Error", error: (error as Error).message });
-            return;
         }
     }
+    
 
     async getRecipeByUser(req: Request, res: Response) {
         const userId = req.params._id;
