@@ -54,9 +54,12 @@ class RecipeController extends BaseController<IRecipe> {
 
     override async create(req: Request, res: Response): Promise<void> {
         try {
+
             // המרת JSON מחרוזת למערכים אמיתיים
-            const ingredients = JSON.parse(req.body.ingredients || "[]");
-            const tags = JSON.parse(req.body.tags || "[]");
+            const ingredients = JSON.parse(JSON.stringify(req.body.ingredients) || "[]");
+            
+            
+            const tags = JSON.parse(JSON.stringify(req.body.tags) || "[]");
     
             // בדיקות תקינות
             if (!Array.isArray(ingredients) || ingredients.length === 0) {
@@ -69,13 +72,14 @@ class RecipeController extends BaseController<IRecipe> {
             }
     
             // קבלת המשתמש המחובר (במקום לשלוח owner מהפרונט)
-            const owner =  "guest";  // 👈 צריך authMiddleware        //req.user?.id ||
+            //const owner =  "guest";  // 👈 צריך authMiddleware        //req.user?.id ||
     
             // יצירת המתכון
             const createdRecipe = await this.model.create({
+                image: req.body.image,
                 title: req.body.title,
                 likes: Number(req.body.likes) || 0, // המרה למספר
-                owner,
+                owner: req.body.owner,
             });
             const recipeId = createdRecipe._id;
     
