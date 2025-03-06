@@ -55,11 +55,26 @@ class RecipeController extends BaseController<IRecipe> {
     override async create(req: Request, res: Response): Promise<void> {
         try {
 
-            // המרת JSON מחרוזת למערכים אמיתיים
-            const ingredients = JSON.parse(JSON.stringify(req.body.ingredients) || "[]");
+            let ingredients = req.body.ingredients;
+
+            // המרה ל-JSON בכל מקרה, אבל אם זה לא מחרוזת, נמיר אותו קודם למחרוזת
+            try {
+                ingredients = JSON.parse(typeof ingredients === "string" ? ingredients : JSON.stringify(ingredients));
+            } catch (error) {
+                console.error("❌ Invalid JSON format:", ingredients);
+                ingredients = []; // ברירת מחדל במקרה של שגיאה
+            }
             
-            
-            const tags = JSON.parse(JSON.stringify(req.body.tags) || "[]");
+            let tags = req.body.tags;
+
+            // המרה ל-JSON בכל מקרה, עם בדיקה שהנתון מוכן לפענוח
+            try {
+                tags = JSON.parse(typeof tags === "string" ? tags : JSON.stringify(tags));
+            } catch (error) {
+                console.error("❌ Invalid JSON format for tags:", tags);
+                tags = []; // ברירת מחדל במקרה של שגיאה
+            }
+
     
             // בדיקות תקינות
             if (!Array.isArray(ingredients) || ingredients.length === 0) {
