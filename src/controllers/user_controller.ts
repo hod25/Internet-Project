@@ -3,9 +3,13 @@ import BaseController from "./base_controller";
 import userModel from "../models/users_model";
 import bcrypt from "bcryptjs";
 
-class UsersController extends BaseController<typeof userModel> {
-    constructor(model: typeof userModel) {
-        super(model);
+interface AuthenticatedRequest extends Request {
+    userId?: string;
+}
+
+class UserController extends BaseController<typeof userModel> {
+    constructor() {
+        super(userModel);
     }
 
     async getByEmail(req: Request, res: Response): Promise<void> {
@@ -47,8 +51,69 @@ class UsersController extends BaseController<typeof userModel> {
             res.status(400).send(error);
         }
     }
+
+    async get(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = req.params.id;
+            if (userId) {
+                const user = await this.model.findById(userId);
+                if (!user) {
+                    res.status(404).send({ message: "User not found" });
+                    return;
+                }
+                res.send(user);
+            } else {
+                const users = await this.model.find();
+                res.send(users);
+            }
+        } catch (error) {
+            console.error("Error retrieving users:", error); // Log error
+            res.status(400).send(error);
+        }
+    }
+
+    async getMe(req: AuthenticatedRequest, res: Response): Promise<void> {
+        try {
+            const userId = req.userId; // Assuming userId is set in authMiddleware
+            if (!userId) {
+                res.status(401).send({ message: "Unauthorized" });
+                return;
+            }
+            const user = await this.model.findById(userId);
+            if (user) {
+                res.send(user);
+            } else {
+                res.status(404).send({ message: "User not found" });
+            }
+        } catch (error) {
+            res.status(400).send({ message: "Error fetching user data", error });
+        }
+    }
+    
+    async update(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = req.params.id;
+            const { name, bio, allergies, img } = req.body;
+
+            const updatedUser = await this.model.findByIdAndUpdate(
+                userId,
+                { name, bio, allergies, img },
+                { new: true }
+            );
+
+            if (!updatedUser) {
+                res.status(404).send({ message: "User not found" });
+                return;
+            }
+
+            res.status(200).send(updatedUser);
+        } catch (error) {
+            console.error("Error updating user:", error); // Log error
+            res.status(400).send(error);
+        }
+    }
 }
 
-const usersController = new UsersController(userModel);
+const usersController = new UserController();
 
 export default usersController;
