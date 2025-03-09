@@ -154,5 +154,42 @@ router.post("/logout", authController.logout);
  */
 router.post("/refresh", authController.refresh);
 
+/**
+ * @swagger
+ * /auth/google-login:
+ *   post:
+ *     summary: Logs in a user with Google
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               token:
+ *                 type: string
+ *             required:
+ *               - token
+ *     responses:
+ *       200:
+ *         description: Successful Google login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                 refreshToken:
+ *                   type: string
+ *                 _id:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ *       400:
+ *         description: Bad Request
+ */
+router.post("/google-login", authController.googleLogin);
 
 export default router;
