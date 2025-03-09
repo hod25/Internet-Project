@@ -13,53 +13,30 @@ class RecipeController extends BaseController<IRecipe> {
     }
 
     override async get(req: Request, res: Response): Promise<void> {
-        const filter = req.params._id;
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 10;
         const skip = (page - 1) * limit;
-
+    
         try {
-            let recipes;
-            if (filter) {
-                recipes = await this.model.find({ _id: filter }).populate("owner", "name").skip(skip).limit(limit);
-            } else {
-                recipes = await this.model.find().populate("owner", "name").skip(skip).limit(limit);
-            }
-
-            if (recipes.length == 0) {
-                res.status(404).send({ message: "No recipes found" });
+            const totalRecipes = await this.model.countDocuments(); // סופרים כמה מתכונים יש בסה"כ
+            const totalPages = Math.ceil(totalRecipes / limit); // מחשבים כמה עמודים יש
+    
+            const recipes = await this.model.find()
+                .populate("owner", "name")
+                .skip(skip)
+                .limit(limit);
+    
+            if (recipes.length === 0) {
+                res.status(404).json({ message: "No recipes found", totalPages });
                 return;
             }
-
-            const recipesWithDetails = await Promise.all(
-                recipes.map(async (recipe) => {
-                    // Fetch ingredients and create an array of ingredient names
-                    const ingredients = await ingredientModel.find({ recipe: recipe._id }) as { name: string }[];
-                    const ingredientNames = ingredients.map((ing) => ing.name);
-
-                    // Fetch tags from the recipeTag table
-                    const recipeTags = await recipeTagModel.find({ recipe: recipe._id }).select('tag');
-                    const tagIds = recipeTags.map(rt => rt.tag);
-
-                    // Fetch tag names based on ObjectIds
-                    const tags = await tagModel.find({ _id: { $in: tagIds } }).select('name');
-                    const tagNames = tags.map(tag => tag.name);
-
-                    // Return the recipe with owner name, ingredient names, and tag names
-                    return { 
-                        ...recipe.toObject(), 
-                        owner: recipe.owner ? recipe.owner : "Unknown",  // Fetch owner name
-                        ingredients: ingredientNames, 
-                        tags: tagNames 
-                    };
-                })
-            );
-
-            res.send(recipesWithDetails);
+    
+            res.json({ recipes, totalPages }); // מחזירים גם את רשימת המתכונים וגם את מספר העמודים
         } catch (error) {
             res.status(400).json({ message: "Error retrieving recipes", error: (error as Error).message });
         }
     }
+    
 
     override async create(req: Request, res: Response): Promise<void> {
         try {
