@@ -3,29 +3,35 @@ import initApp from "../server";
 import mongoose from "mongoose";
 import commentsModel from "../models/comment_model";
 import { Express } from "express";
+import userModel, { IUser } from "../models/users_model";
 
 let app: Express;
 const baseUrl = "/comments";
 
-const testUser = {
+type User = IUser & {
+  accessToken?: string,
+  refreshToken?: string
+};
+
+const testUser: User  = {
   email: "test@user.com",
   password: "testpassword",
   name: "user1",
   last_name: "last1",
   background: "background1",
   image: "image1",
-  tag: "tag1",
+  tags: ["tag1"],
   profile: "profile1",
 }
 
-const testUser2 = {
+const testUser2: User  = {
   email: "galgadot@user.com",
   password: "wonderwoman",
   name: "gal",
   last_name: "gadot",
   background: "background2",
   image: "image2",
-  tag: "tag2",
+  tags: ["tag2"],
   profile: "profile2",  
 };
 
@@ -36,6 +42,12 @@ beforeAll(async () => {
   app = await initApp();
   console.log("beforeAll");
   await commentsModel.deleteMany();
+  await userModel.deleteMany();
+  await request(app).post("/auth/register").send(testUser);
+  const res = await request(app).post("/auth/login").send(testUser);
+  testUser.accessToken = res.body.accessToken;
+  testUser.refreshToken = res.body.refreshToken;
+  expect(testUser.refreshToken).toBeDefined();
 });
 
 afterAll(async () => {
@@ -64,7 +76,7 @@ describe("Commnents test suite", () => {
 
 
   test("Test Addding new comment", async () => {
-    const response = await request(app).post(baseUrl).send(testComment);
+    const response = await request(app).post(baseUrl).set({ authorization: "JWT " + testUser.accessToken }).send(testComment);
     expect(response.statusCode).toBe(201);
     expect(response.body.comment).toBe(testComment.comment);
     expect(response.body.recipeId).toBe(testComment.recipeId);
@@ -73,7 +85,7 @@ describe("Commnents test suite", () => {
   });
 
   test("Test Addding invalid comment", async () => {
-    const response = await request(app).post(baseUrl).send(invalidComment);
+    const response = await request(app).post(baseUrl).set({ authorization: "JWT " + testUser.accessToken }).send(invalidComment);
     expect(response.statusCode).not.toBe(201);
   });
 

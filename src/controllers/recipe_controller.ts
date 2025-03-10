@@ -76,6 +76,7 @@ class RecipeController extends BaseController<IRecipe> {
             }
 
     
+            
             // בדיקות תקינות
             if (!Array.isArray(ingredients) || ingredients.length === 0) {
                 res.status(400).json({ message: "Invalid or missing ingredients array" });
