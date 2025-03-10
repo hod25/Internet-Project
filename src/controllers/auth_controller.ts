@@ -11,37 +11,29 @@ interface AuthenticatedRequest extends Request {
   userId?: string; // Add userId to the Request type
 }
 
-export const authMiddleware = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  // חילוץ הטוקן מתוך הכותרת
-  const token = req.headers.authorization?.split(" ")[1];
+export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+    const authorization = req.header('authorization');
+    const token = authorization && authorization.split(' ')[1];
 
-  // אם אין טוקן, מחזירים שגיאה
-  if (!token) {
-    return res.status(401).send({ message: "No token provided" });
-  }
-
-  try {
-    // אימות הטוקן
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!); // אנו מצפים שה-decoded יכיל את ה-id של המשתמש
-    console.log("Decoded token:", decoded); // לוג להדפסת המידע שדקוד מהטוקן
-    
-    // חיפוש המשתמש על פי ה-id שמתקבל מהטוקן
-    const user = await userModel.findById(decoded.id);
-    if (!user) {
-      return res.status(401).send({ message: "Invalid token" });
+    if (!token) {
+        res.status(401).send('Access Denied');
+        return;
+    }
+    if (!process.env.TOKEN_SECRET) {
+        res.status(500).send('Server Error');
+        return;
     }
 
-    // אם המשתמש נמצא, מכניסים את ה-id שלו ל-req
-    req.userId = user._id;
-
-    // ממשיכים לעבד את הבקשה
-    next();
-  } catch (error) {
-    // אם קרתה שגיאה במהלך אימות הטוקן, מחזירים שגיאה
-    res.status(401).send({ message: "Unauthorized", error });
-  }
+    jwt.verify(token, process.env.TOKEN_SECRET, (err, payload) => {
+        if (err) {
+            res.status(401).send('Access Denied');
+            return;
+        }
+        req.params.userId = (payload as Payload)._id;
+        next();
+    });
 };
-
+  
 
 const register = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -304,6 +296,7 @@ const googleLogin = async (req: Request, res: Response) => {
   }
 };
 
+
 type Payload = {
     _id: string;
 };
@@ -314,5 +307,6 @@ export default {
     login,
     refresh,
     logout,
+    authMiddleware,
     googleLogin, // Add googleLogin to the exports
 };

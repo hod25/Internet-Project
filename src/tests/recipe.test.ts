@@ -87,8 +87,8 @@ describe("Recipe Tests", () => {
   //after creation there is one document
   test("Recipe test get all", async () => {
    const response = await request(app).get(baseUrl);
-   expect(response.statusCode).toBe(200);
-   expect(response.body.length).toBe(1);
+   expect(response.statusCode).toBe(200);   
+   expect(response.body.totalPages).toBe(1);
   });
 
   test("Recipe test get by id", async () => {
@@ -150,6 +150,8 @@ describe("Recipe Tests", () => {
     const response = await request(app).delete(baseUrl + recipeId).set({ authorization: "JWT " + testUser.accessToken });
     expect(response.statusCode).toBe(200);
     const response2 = await request(app).get(baseUrl + recipeId);
+    console.log(response2.body);
+    
     expect(response2.statusCode).toBe(404);
   });
 

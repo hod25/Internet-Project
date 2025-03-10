@@ -6,6 +6,7 @@ import recipeTagModel from "../models/recipeTag_model";
 import { Request, Response } from "express";
 import BaseController from "./base_controller";
 import { Model } from "mongoose";
+import { ITag } from "../models/tag_model"
 
 class RecipeController extends BaseController<IRecipe> {
     constructor(model: Model<IRecipe>) {
@@ -13,27 +14,67 @@ class RecipeController extends BaseController<IRecipe> {
     }
 
     override async get(req: Request, res: Response): Promise<void> {
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 10;
-        const skip = (page - 1) * limit;
-    
         try {
-            const totalRecipes = await this.model.countDocuments(); // סופרים כמה מתכונים יש בסה"כ
-            const totalPages = Math.ceil(totalRecipes / limit); // מחשבים כמה עמודים יש
+            let page = parseInt(req.query.page as string) || 1;
+            let limit = parseInt(req.query.limit as string) || 10;
     
+            if (page < 1) page = 1;
+            if (limit < 1) limit = 10;
+    
+            const skip = (page - 1) * limit;
+    
+            // קבלת מספר המתכונים הכולל
+            const totalRecipes = await this.model.countDocuments();
+            const totalPages = Math.ceil(totalRecipes / limit);
+    
+            // שליפת המתכונים
             const recipes = await this.model.find()
                 .populate("owner", "name")
                 .skip(skip)
-                .limit(limit);
-    
-            if (recipes.length === 0) {
+                .limit(limit)
+                .lean(); 
+            
+            if (!recipes.length) {
                 res.status(404).json({ message: "No recipes found", totalPages });
                 return;
             }
     
-            res.json({ recipes, totalPages }); // מחזירים גם את רשימת המתכונים וגם את מספר העמודים
+            // המרת ObjectId למחרוזת
+            const recipeIds = recipes.map(recipe => recipe._id.toString());
+    
+            // שליפת המרכיבים
+            const ingredients = await ingredientModel.find({ recipe: { $in: recipeIds } }).lean();
+            const groupedIngredients: Record<string, string[]> = {};
+            ingredients.forEach(ing => {
+                const recipeId = ing.recipe.toString();
+                if (!groupedIngredients[recipeId]) groupedIngredients[recipeId] = [];
+                groupedIngredients[recipeId].push(ing.name.toString());
+            });
+    
+            // שליפת תגיות
+            const recipeTags = await recipeTagModel
+                .find({ recipe: { $in: recipeIds } })
+                .populate<{ tag: ITag }>("tag")
+                .lean();
+
+            const groupedTags: Record<string, string[]> = {};
+            recipeTags.forEach(tag => {
+                const recipeId = tag.recipe.toString();
+                if (!groupedTags[recipeId]) groupedTags[recipeId] = [];
+                groupedTags[recipeId].push(tag.tag.name.toString());
+            });
+    
+            // הוספת המרכיבים והתגיות לכל מתכון
+            const enrichedRecipes = recipes.map(recipe => ({
+                ...recipe,
+                ingredients: groupedIngredients[recipe._id.toString()] || [],
+                tags: groupedTags[recipe._id.toString()] || []
+            }));
+    
+            res.json({ recipes: enrichedRecipes, totalPages });
         } catch (error) {
-            res.status(400).json({ message: "Error retrieving recipes", error: (error as Error).message });
+            console.error("❌ Error retrieving recipes:", error);
+            res.status(500).json({ message: "Internal Server Error", error: (error as Error).message });
         }
     }
     

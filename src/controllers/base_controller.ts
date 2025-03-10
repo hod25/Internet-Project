@@ -27,19 +27,21 @@ class BaseController<T> {
     };
 
     // לא מיותר!
-    // async getById(req: Request, res: Response) {
-    //     const id = req.params.id;
-    //     try {
-    //         const item = await this.model.findById(id);
-    //         if (item != null) {
-    //             res.send(item);
-    //         } else {
-    //             res.status(404).send("not found");
-    //         }
-    //     } catch (error) {
-    //         res.status(400).send(error);
-    //     }
-    // };
+    async getById(req: Request, res: Response) {
+        const id = req.params._id;
+        try {
+            const item = await this.model.findById(id);
+            console.log(item);
+            
+            if (item != null) {
+                res.send(item);
+            } else {
+                res.status(404).send("not found");
+            }
+        } catch (error) {
+            res.status(400).send(error);
+        }
+    };
 
     async update(req: Request, res: Response) {
         const id = req.body._id;

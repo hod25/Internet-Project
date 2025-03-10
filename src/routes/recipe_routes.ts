@@ -27,7 +27,7 @@ router.put("/:_id", authMiddleware, recipeController.update.bind(recipeControlle
 router.get("/", recipeController.get.bind(recipeController));
 
 // Get request to get recipe by id
-router.get("/:_id", recipeController.get.bind(recipeController));
+router.get("/:_id", recipeController.getById.bind(recipeController));
 
 // Get request to get by user id
 router.get("/user/:_id", recipeController.getRecipeByUser.bind(recipeController));
