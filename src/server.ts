@@ -13,11 +13,13 @@ import swaggerUi from "swagger-ui-express";
 
 const app = express();
 
+
 app.use(
   cors({
     origin: "http://localhost:5173", 
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type"],
+    allowedHeaders: ["Content-Type", "Authorization"], // Add "Authorization" to allowed headers
   })
 );
 
@@ -53,19 +55,21 @@ const initApp = (): Promise<Express> => {
       reject("DB_CONNECT is not defined");
     } else {
       mongoose
-        .connect(process.env.DB_CONNECT)
-        .then(() => {
-          app.use(bodyParser.json());
-          app.use(bodyParser.urlencoded({ extended: true }));
-          app.use("/recipe", recipe_routes);
-          app.use("/comments", comments_routes);
-          app.use("/auth", auth_routes);
-          app.use("/users", users_routes);
-          resolve(app);
-        })
-        .catch((err) => {
-          reject(err);
-        });
+      .connect(process.env.DB_CONNECT)
+      .then(() => {
+        console.log("Connected to the database");
+        app.use(bodyParser.json());
+        app.use(bodyParser.urlencoded({ extended: true }));
+        app.use("/recipe", recipe_routes);
+        app.use("/comments", comments_routes);
+        app.use("/auth", auth_routes);
+        app.use("/users", users_routes);
+        resolve(app);
+      })
+      .catch((err) => {
+        console.error("DB Connection Error:", err);
+        reject(err);
+      });
     }
   });
 };

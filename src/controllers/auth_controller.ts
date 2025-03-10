@@ -5,7 +5,42 @@ import tagModel from "../models/tag_model";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Document } from 'mongoose';
+import { OAuth2Client } from 'google-auth-library';
 
+interface AuthenticatedRequest extends Request {
+  userId?: string; // Add userId to the Request type
+}
+
+export const authMiddleware = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  // חילוץ הטוקן מתוך הכותרת
+  const token = req.headers.authorization?.split(" ")[1];
+
+  // אם אין טוקן, מחזירים שגיאה
+  if (!token) {
+    return res.status(401).send({ message: "No token provided" });
+  }
+
+  try {
+    // אימות הטוקן
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!); // אנו מצפים שה-decoded יכיל את ה-id של המשתמש
+    console.log("Decoded token:", decoded); // לוג להדפסת המידע שדקוד מהטוקן
+    
+    // חיפוש המשתמש על פי ה-id שמתקבל מהטוקן
+    const user = await userModel.findById(decoded.id);
+    if (!user) {
+      return res.status(401).send({ message: "Invalid token" });
+    }
+
+    // אם המשתמש נמצא, מכניסים את ה-id שלו ל-req
+    req.userId = user._id;
+
+    // ממשיכים לעבד את הבקשה
+    next();
+  } catch (error) {
+    // אם קרתה שגיאה במהלך אימות הטוקן, מחזירים שגיאה
+    res.status(401).send({ message: "Unauthorized", error });
+  }
+};
 
 
 const register = async (req: Request, res: Response): Promise<void> => {
@@ -116,12 +151,12 @@ const login = async (req: Request, res: Response) => {
         }
         user.refreshToken.push(tokens.refreshToken);
         await user.save();
-        res.status(200).send(
-            {
-                accessToken: tokens.accessToken,
-                refreshToken: tokens.refreshToken,
-                _id: user._id
-            });
+        res.status(200).send({
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            _id: user._id,
+            token: tokens.accessToken // Ensure token is included in the response
+        });
 
     } catch (err) {
         res.status(400).send(err);
@@ -217,36 +252,67 @@ const refresh = async (req: Request, res: Response) => {
     }
 };
 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+const googleLogin = async (req: Request, res: Response) => {
+  const { token } = req.body;
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload) {
+      res.status(400).send('Invalid Google token');
+      return;
+    }
+
+    const { sub, email, name, picture } = payload;
+
+    let user = await userModel.findOne({ email });
+    if (!user) {
+      user = await userModel.create({
+        email,
+        name,
+        image: picture,
+        googleId: sub,
+      });
+    }
+
+    const tokens = generateToken(user._id);
+    if (!tokens) {
+      res.status(500).send('Server Error');
+      return;
+    }
+
+    if (!user.refreshToken) {
+      user.refreshToken = [];
+    }
+    user.refreshToken.push(tokens.refreshToken);
+    await user.save();
+
+    res.status(200).send({
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      _id: user._id,
+      token: tokens.accessToken,
+    });
+  } catch (error) {
+    res.status(400).send('Google login failed');
+  }
+};
+
 type Payload = {
     _id: string;
 };
 
-export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-    const authorization = req.header('authorization');
-    const token = authorization && authorization.split(' ')[1];
-
-    if (!token) {
-        res.status(401).send('Access Denied');
-        return;
-    }
-    if (!process.env.TOKEN_SECRET) {
-        res.status(500).send('Server Error');
-        return;
-    }
-
-    jwt.verify(token, process.env.TOKEN_SECRET, (err, payload) => {
-        if (err) {
-            res.status(401).send('Access Denied');
-            return;
-        }
-        req.params.userId = (payload as Payload)._id;
-        next();
-    });
-};
 
 export default {
     register,
     login,
     refresh,
-    logout
+    logout,
+    googleLogin, // Add googleLogin to the exports
 };

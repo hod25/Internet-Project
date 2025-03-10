@@ -12,45 +12,31 @@ class RecipeController extends BaseController<IRecipe> {
         super(model);
     }
 
-    override async get(req: Request, res: Response) {
-        const filter = req.params._id;
+    override async get(req: Request, res: Response): Promise<void> {
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (page - 1) * limit;
+    
         try {
-            let recipes;
-            if (filter) {
-                recipes = await this.model.find({ _id: filter });
-            } else {
-                recipes = await this.model.find();
+            const totalRecipes = await this.model.countDocuments(); // סופרים כמה מתכונים יש בסה"כ
+            const totalPages = Math.ceil(totalRecipes / limit); // מחשבים כמה עמודים יש
+    
+            const recipes = await this.model.find()
+                .populate("owner", "name")
+                .skip(skip)
+                .limit(limit);
+    
+            if (recipes.length === 0) {
+                res.status(404).json({ message: "No recipes found", totalPages });
+                return;
             }
-            
-            if (recipes.length==0){
-                res.status(404).send({ message: "No recipes found" });
-            }
-            else {    
-                const recipesWithDetails = await Promise.all(
-                    recipes.map(async (recipe) => {
-                        // שליפת מרכיבים ויצירת מערך של שמות המרכיבים
-                        const ingredients = await ingredientModel.find({ recipe: recipe._id });
-                        const ingredientNames = ingredients.map((ing) => ing.name);
-                
-                        // שליפת תגיות מתוך טבלת recipeTag
-                        const recipeTags = await recipeTagModel.find({ recipe: recipe._id }).select('tag'); // רק ObjectId של התגית
-                        const tagIds = recipeTags.map(rt => rt.tag); // שליפת כל ה-ObjectId של התגיות
-                
-                        // שליפת שמות התגיות לפי ה-ObjectIds
-                        const tags = await tagModel.find({ _id: { $in: tagIds } }).select('name'); // שליפת שמות התגיות
-                        const tagNames = tags.map(tag => tag.name);  // שליפת שמות התגיות מתוך התוצאה
-                
-                        // החזרת המתכון עם שמות המרכיבים ושמות התגיות
-                        return { ...recipe.toObject(), ingredients: ingredientNames, tags: tagNames };
-                    })
-                );
-
-                res.send(recipesWithDetails);
-            }
+    
+            res.json({ recipes, totalPages }); // מחזירים גם את רשימת המתכונים וגם את מספר העמודים
         } catch (error) {
             res.status(400).json({ message: "Error retrieving recipes", error: (error as Error).message });
         }
     }
+    
 
     override async create(req: Request, res: Response): Promise<void> {
         try {
