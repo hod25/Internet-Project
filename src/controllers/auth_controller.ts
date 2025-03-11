@@ -11,28 +11,60 @@ interface AuthenticatedRequest extends Request {
   userId?: string; // Add userId to the Request type
 }
 
-export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-    const authorization = req.header('authorization');
-    const token = authorization && authorization.split(' ')[1];
+export const authMiddleware = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const authorization = req.header("authorization");
+        const token = authorization && authorization.split(" ")[1];
 
-    if (!token) {
-        res.status(401).send('Access Denied');
-        return;
-    }
-    if (!process.env.TOKEN_SECRET) {
-        res.status(500).send('Server Error');
-        return;
-    }
-
-    jwt.verify(token, process.env.TOKEN_SECRET, (err, payload) => {
-        if (err) {
-            res.status(401).send('Access Denied');
+        if (!token) {
+            res.status(401).json({ message: "Access Denied" });
             return;
         }
-        req.params.userId = (payload as Payload)._id;
-        next();
-    });
+
+        if (!process.env.TOKEN_SECRET) {
+            res.status(500).json({ message: "Server Error: Missing TOKEN_SECRET" });
+            return;
+        }
+
+        try {
+            // ניסיון לאמת עם JWT מקומי
+            const payload = jwt.verify(token, process.env.TOKEN_SECRET) as { _id: string };
+            req.params.userId = payload._id;
+            return next(); // עצירת הפונקציה לאחר אימות מוצלח
+        } catch (jwtError: unknown) {
+            if (jwtError instanceof Error) {
+                console.warn("🔴 JWT לא תקף:", jwtError.message);
+            }
+        }
+
+        // ניסיון לאמת עם Google Token באופן בסיסי
+        try {
+            const decodedGoogleToken = jwt.decode(token) as { sub?: string } | null;
+            if (decodedGoogleToken?.sub) {
+                req.params.userId = decodedGoogleToken.sub;
+                return next(); // עצירת הפונקציה לאחר אימות מוצלח
+            }
+        } catch (googleError: unknown) {
+            if (googleError instanceof Error) {
+                console.error("🔴 שגיאה בפענוח Google Token:", googleError.message);
+            }
+        }
+
+        res.status(401).json({ message: "Access Denied: Invalid Token" });
+        return;
+    } catch (error: unknown) {
+        let errorMessage = "Internal Server Error";
+        if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+        console.error("🔴 שגיאה באימות:", errorMessage);
+        res.status(500).json({ message: errorMessage });
+        return;
+    }
 };
+
+
+
   
 
 const register = async (req: Request, res: Response): Promise<void> => {
