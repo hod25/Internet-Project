@@ -12,11 +12,15 @@ import { authMiddleware } from "../controllers/auth_controller";
 
 router.post("/register" , usersController.register.bind(usersController));
 
-router.get("/", usersController.get.bind(usersController));
+router.get("/:email", usersController.getByEmail.bind(usersController));
+
+router.get("/tags/:_id", usersController.getTagsForUser.bind(usersController))
 
 router.get("/:id", usersController.get.bind(usersController));
 
-router.get("/:email", usersController.getByEmail.bind(usersController));
+router.get("/", usersController.get.bind(usersController));
+
+router.put("/", authMiddleware ,usersController.updateUser.bind(usersController))
 
 router.delete("/:id", usersController.delete.bind(usersController));
 

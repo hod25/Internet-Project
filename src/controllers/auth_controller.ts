@@ -179,6 +179,7 @@ const login = async (req: Request, res: Response) => {
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
             _id: user._id,
+            email: user.email,
             token: tokens.accessToken // Ensure token is included in the response
         });
 
@@ -327,6 +328,37 @@ const googleLogin = async (req: Request, res: Response) => {
     res.status(400).send('Google login failed');
   }
 };
+export const getUserFromGoogleToken = (req: Request, res: Response) : void => {
+    try {
+        var { token } = req.query;
+        if (!token) {
+            res.status(400).json({ message: "Token is required" });
+            return;
+        }
+        if (!token || typeof token !== 'string') {
+            res.status(400).json({ message: "Token is required and must be a string" });
+            return;
+        }
+
+        // ✅ מפרקים את ה-Token ללא אימות
+        const decoded = jwt.decode(token) as { email?: string} | null;
+
+        if (!decoded) {
+            res.status(400).json({ message: "Invalid token" });
+        }
+
+        // ✅ מחזירים את פרטי המשתמש כפי שמופיעים ב-Token
+        res.json({
+            email: decoded?.email
+        });
+        return;
+    } catch (error) {
+        console.error("Error decoding Google token:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+    }
+};
+
 
 
 type Payload = {
@@ -340,5 +372,6 @@ export default {
     refresh,
     logout,
     authMiddleware,
+    getUserFromGoogleToken,
     googleLogin, // Add googleLogin to the exports
 };

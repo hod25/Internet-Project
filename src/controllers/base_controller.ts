@@ -9,6 +9,8 @@ class BaseController<T> {
 
     //get all or get by id based on reqest params
     async get(req: Request, res: Response) {
+        console.log("base get");
+        
         const filter = req.params._id;
         try {
             if (filter) {

@@ -1,6 +1,6 @@
 import express from "express";
 const router = express.Router();
-import authController from "../controllers/auth_controller";
+import authController, { authMiddleware } from "../controllers/auth_controller";
 
 /**
 * @swagger
@@ -154,5 +154,6 @@ router.post("/logout", authController.logout);
  */
 router.post("/refresh", authController.refresh);
 
+router.get("/google-user",authController.getUserFromGoogleToken.bind(authController));
 
 export default router;
