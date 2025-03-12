@@ -23,6 +23,8 @@ router.get("/search", recipeController.getRecipeByTagsAndTitle.bind(recipeContro
 // Update request to update a recipe by id
 router.put("/:_id", authMiddleware, recipeController.update.bind(recipeController));
 
+router.put("/like/:_id",recipeController.addLike.bind(recipeController))
+
 // Get request to get all recipes
 router.get("/", recipeController.get.bind(recipeController));
 

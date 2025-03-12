@@ -56,14 +56,19 @@ class RecipeController extends BaseController<IRecipe> {
                 .find({ recipe: { $in: recipeIds } })
                 .populate<{ tag: ITag }>("tag")
                 .lean();
+            
+            //console.log(recipeTags);
 
             const groupedTags: Record<string, string[]> = {};
-            recipeTags.forEach(tag => {
-                const recipeId = tag.recipe.toString();
-                if (!groupedTags[recipeId]) groupedTags[recipeId] = [];
-                groupedTags[recipeId].push(tag.tag.name.toString());
-            });
-    
+                recipeTags.forEach(tag => {
+                    const recipeId = tag.recipe.toString();
+                    if (!groupedTags[recipeId]) 
+                        groupedTags[recipeId] = [];
+                    if (tag.tag && tag.tag.name) {
+                        groupedTags[recipeId].push(tag.tag.name.toString());
+                    }
+                });
+
             // הוספת המרכיבים והתגיות לכל מתכון
             const enrichedRecipes = recipes.map(recipe => ({
                 ...recipe,
@@ -261,6 +266,24 @@ class RecipeController extends BaseController<IRecipe> {
             res.status(200).json(recipes);
         } catch (error) {
             res.status(400).json({ message: "Error retrieving recipes", error: (error as Error).message });
+        }
+    }
+
+    async addLike(req: Request, res: Response) : Promise<void> {
+        try {
+            const _id = req.params._id;
+            const item = await recipeModel.findById({ _id: _id });
+            if (!item) {
+                res.status(404).json({ error: "Recipe not found" });
+                return; 
+            }
+
+            item.likes+=1;
+            await item.save(); // שמירה במסד הנתונים
+
+            res.json({ message: "Like added", likes: item.likes }); // מחזיר מספר לייקים עדכני
+        } catch (error) {
+            res.status(400).json({ message: "Error adding like", error: (error as Error).message });
         }
     }
 }
