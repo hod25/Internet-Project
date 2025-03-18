@@ -1,14 +1,25 @@
 import initApp from "./server";
+import https from "https";
+import fs from "fs";
+import http from "http";
+
 const port = process.env.PORT;
+const domainBase = process.env.DOMAIN_BASE;
 
-initApp()
-  .then((app) => {
+const tmpFunc = async () => {
+  const app = await initApp();
+  if (process.env.NODE_ENV === "production") {
     app.listen(port, () => {
-      console.log(`Example app listening at http://localhost:${port}`);
+      console.log(`Example app listening at ${domainBase}:${port}`);
     });
-  })
-  .catch(() => {
-    console.log("Error Fail starting the server");
-  });
-
-
+  } else {
+    const httpsOptions = {
+      key: fs.readFileSync("./client-key.pem"),
+      cert: fs.readFileSync("./client-cert.pem"),
+    };
+    https.createServer(httpsOptions, app).listen(port, () => {
+      console.log(`Example app listening at ${domainBase}:${port}`);
+    });
+  }
+};
+tmpFunc();

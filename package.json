@@ -4,9 +4,10 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "dev": "copy .env_dev .env && nodemon ./src/app.ts",
-    "start": "copy .env_dev .env && tsc && node ./dist/app.js",
-    "test": "cls && copy .env_test .env && tsc && jest --detectOpenHandles --forceExit --runInBand",
+    "prod": "cp .env_prod .env && tsc && nodemon ./src/app.ts",
+    "dev": "cp .env_dev .env && nodemon ./src/app.ts",
+    "start": "cp .env_dev .env && tsc && node ./dist/app.js",
+    "test": "cls && cp .env_test .env && tsc && jest --detectOpenHandles --forceExit --runInBand",
     "testAuth": "jest --detectOpenHandles --forceExit auth.test.ts",
     "testPost": "jest --detectOpenHandles --forceExit posts.test.ts",
     "lint": "eslint . --ext .ts"
@@ -22,21 +23,21 @@
     "flatted": "^3.3.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.6",
-    "multer": "^1.4.5-lts.1"
-  },
-  "devDependencies": {
+    "multer": "^1.4.5-lts.1",
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/body-parser": "^1.19.5",
     "@types/express": "^5.0.0",
-    "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/multer": "^1.4.12",
-    "@types/supertest": "^6.0.2",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.7",
     "@typescript-eslint/eslint-plugin": "^8.17.0",
-    "@typescript-eslint/parser": "^8.17.0",
+    "@typescript-eslint/parser": "^8.17.0"    
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/supertest": "^6.0.2",
     "dotenv": "^16.4.7",
     "dotenv-cli": "^8.0.0",
     "eslint": "^9.16.0",

@@ -11,6 +11,9 @@ import users_routes from "./routes/users.routes";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 
+const port = process.env.PORT;
+const domainBase = process.env.DOMAIN_BASE;
+
 // Swagger configuration
 const swaggerOptions = {
   swaggerDefinition: {
@@ -22,7 +25,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `http://localhost:${process.env.PORT}`,
+        url: `${domainBase}`,
       },
     ],
   },
