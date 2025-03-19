@@ -58,7 +58,7 @@ class BaseController<T> {
 
     async create(req: Request, res: Response) {
         const body = req.body;
-        console.log(body);
+        console.log(body.owner);
         try {
             const item = await this.model.create(body);
             res.status(201).send(item);

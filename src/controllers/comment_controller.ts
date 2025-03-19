@@ -30,14 +30,12 @@ class CommentsController extends BaseController<IComments> {
             console.error("Error creating comment:", error);
             res.status(500).json({ message: "Internal Server Error", error: (error as Error).message });
         }
-    }
+    }*/
 
-    // אפשר להוסיף פונקציות נוספות לפי הצורך, למשל:
-    // קבלת תגובות לפי מזהה מתכון
     async getCommentsByRecipeId(req: Request, res: Response): Promise<void> {
-        const { recipeId } = req.params;
+        const recipeId = req.params._id;        
         try {
-            const comments = await this.model.find({ recipeId }).lean();
+            const comments = await this.model.find({ recipeId: recipeId }).lean();
             if (comments.length === 0) {
                 res.status(404).json({ message: "No comments found for this recipe" });
                 return;
@@ -48,7 +46,7 @@ class CommentsController extends BaseController<IComments> {
             res.status(500).json({ message: "Error fetching comments", error: (error as Error).message });
         }
     }
-
+/*
     // אפשר גם לעדכן או למחוק תגובות
     // דוגמה לפונקציה שמעדכנת תגובה
     async updateComment(req: Request, res: Response): Promise<void> {

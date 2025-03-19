@@ -16,7 +16,7 @@ router.get("/:email", usersController.getByEmail.bind(usersController));
 
 router.get("/tags/:_id", usersController.getTagsForUser.bind(usersController))
 
-router.get("/:id", usersController.get.bind(usersController));
+router.get("/id/:_id", usersController.get.bind(usersController));
 
 router.get("/", usersController.get.bind(usersController));
 

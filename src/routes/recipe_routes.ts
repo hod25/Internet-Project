@@ -2,8 +2,23 @@ import express from "express";
 const router = express.Router();
 import recipeController from "../controllers/recipe_controller";
 import { authMiddleware } from "../controllers/auth_controller";
+import multer from 'multer';
+import path from 'path';
 
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "./public/uploads");
+    },
+    filename: function (req, file, cb) {
+        console.log("storage: " + file.originalname);
+        
+        const ext = path.extname(file.originalname);
+        cb(null, Date.now() + ext);
+    }
+});
 
+// הגדרת Multer להעלאת קבצים
+const upload = multer({ storage: storage });
 /**
 * @swagger
 * tags:
@@ -15,7 +30,10 @@ import { authMiddleware } from "../controllers/auth_controller";
 //router.get("/recipes", recipeController.getRecipes);
 
 // Post request to create a new recipe
-router.post("/", authMiddleware, recipeController.create.bind(recipeController));
+router.post("/",authMiddleware, recipeController.create.bind(recipeController));
+
+//Get random recipe from mealdb
+router.post("/random", authMiddleware, recipeController.createFromMealDB.bind(recipeController))
 
 // Get request to search by tag and title
 router.get("/search", recipeController.getRecipeByTagsAndTitle.bind(recipeController));
@@ -36,5 +54,13 @@ router.get("/user/:_id", recipeController.getRecipeByUser.bind(recipeController)
 
 // Delete request to delete a recipe by id
 router.delete("/:_id", authMiddleware, recipeController.delete.bind(recipeController));
+
+router.post('/upload', upload.single("image"), function (req, res) {
+    if (req.file)
+        res.status(200).send({ url: req.file.path })
+    else
+        res.status(400).send("Not a valid file")
+ });    
+ 
 
 export default router;

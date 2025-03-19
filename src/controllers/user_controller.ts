@@ -37,7 +37,8 @@ class UserController extends BaseController<typeof userModel> {
 
     async getByEmail(req: Request, res: Response): Promise<void> {
         try {
-            const { email } = req.params;            
+            const { email } = req.params;
+                        
             const items = await this.model.find({ email: email });
             res.send(items);
         } catch (error) {
@@ -78,9 +79,13 @@ class UserController extends BaseController<typeof userModel> {
 
     async get(req: Request, res: Response): Promise<void> {
         try {
-            const userId = req.params.id;
+            const userId = req.params._id;
+            console.log(userId);
+            
             if (userId) {
                 const user = await this.model.findById(userId);
+                console.log(user);
+
                 if (!user) {
                     res.status(404).send({ message: "User not found" });
                     return;

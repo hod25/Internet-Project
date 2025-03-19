@@ -14,6 +14,9 @@ import { authMiddleware } from "../controllers/auth_controller";
 router.get("/:_id", commentsController.get.bind(commentsController));
 
 router.get("/", commentsController.get.bind(commentsController));
+
+router.get("/recipe/:_id", commentsController.getCommentsByRecipeId.bind(commentsController));
+
     
 router.post("/", authMiddleware, commentsController.create.bind(commentsController));
 

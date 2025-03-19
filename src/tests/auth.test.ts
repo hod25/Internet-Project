@@ -30,7 +30,7 @@ type User = IUser & {
 };
 
 const testUser: User = {
-  email: "test@user.com",
+  email: "arbel.tzoran.98@gmail.com",
   password: "testpassword",
   name: "user1",
   last_name: "last1",

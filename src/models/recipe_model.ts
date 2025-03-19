@@ -20,7 +20,7 @@ const recipeSchema = new mongoose.Schema<IRecipe>({
   },
   ingredients: {
     type: [String], // שינוי לסוג נכון
-    required: true,
+    required: false,
   },
   tags: {
     type: [String], // שינוי לסוג נכון

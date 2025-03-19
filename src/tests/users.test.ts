@@ -14,7 +14,7 @@ type User = IUser & {
 };
 
 const testUser: User = {
-  email: "test@user.com",
+  email: "arbel.tzoran.98@gmail.com",
   password: "testpassword",
   name: "user1",
   last_name: "last1",
@@ -24,7 +24,7 @@ const testUser: User = {
   profile: "profile1"
 }
 const testUser2: User = {
-    email: "galgadot@user.com",
+    email: "fainman@mail.tau.ac.il",
     password: "wonderwoman",
     name: "gal",
     last_name: "gadot",
@@ -62,14 +62,14 @@ describe("Users Tests", () => {
     const response = await request(app).get(baseUrl + "?email=" + testUser.email);
     expect(response.statusCode).toBe(200);
     expect(response.body.length).toBe(1);
-    expect(response.body[0].email).toBe("test@user.com");
+    expect(response.body[0].email).toBe("arbel.tzoran.98@gmail.com");
     _id = response.body[0]._id
   });
 
   test("Test get user by id", async () => {
-    const response = await request(app).get(baseUrl + "?id=" + _id);
+    const response = await request(app).get(baseUrl + "/id/" + _id);
     expect(response.statusCode).toBe(200);
-    expect(response.body[0].email).toBe("test@user.com");
+    expect(response.body.email).toBe("arbel.tzoran.98@gmail.com");
   });
 
   test("Test Create User 2", async () => {

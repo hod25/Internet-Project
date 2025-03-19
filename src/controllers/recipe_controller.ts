@@ -7,11 +7,89 @@ import { Request, Response } from "express";
 import BaseController from "./base_controller";
 import { Model } from "mongoose";
 import { ITag } from "../models/tag_model"
+import * as https from 'https'
+import path from 'path';
+import fs from 'fs';
+
+
 
 class RecipeController extends BaseController<IRecipe> {
     constructor(model: Model<IRecipe>) {
         super(model);
+    };
+
+    async createFromMealDB(req: Request, res: Response): Promise<void> {
+        try {
+            // קבלת מתכון רנדומלי מ-MealDB
+            const mealData = await this.getRandomRecipe();
+
+            if (!mealData) {
+                res.status(500).json({ message: "Failed to fetch recipe from MealDB" });
+                return;
+            }
+
+            // המרה לפורמט שהפונקציה `create` דורשת
+            const formattedRequest: Partial<Request> = {
+                body: {
+                    title: mealData.strMeal,
+                    image: mealData.strMealThumb,
+                    owner: req.body.owner || "guest", // ברירת מחדל לבעלים
+                    likes: 0,
+                    ingredients: this.extractIngredients(mealData), // הפקת רשימת מרכיבים
+                    tags: this.extractTags(mealData) // הפקת רשימת תגיות
+                }
+            };
+
+            // קריאה לפונקציה `create` עם הבקשה החדשה
+            await this.create(formattedRequest as Request, res);
+        } catch (error) {
+            console.error("Error creating recipe from MealDB:", error);
+            res.status(500).json({ message: "Internal Server Error", error: (error as Error).message });
+        }
+    };
+
+    // פונקציה שמביאה מתכון רנדומלי מ-MealDB
+    private async getRandomRecipe(): Promise<any> {
+        return new Promise((resolve, reject) => {
+            https.get('https://www.themealdb.com/api/json/v1/1/random.php', (apiRes) => {
+                let data = '';
+
+                apiRes.on('data', (chunk) => {
+                    data += chunk.toString();
+                });
+
+                apiRes.on('end', () => {
+                    try {
+                        const parsedData = JSON.parse(data);
+                        resolve(parsedData.meals ? parsedData.meals[0] : null);
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+            }).on('error', (error) => {
+                reject(error);
+            });
+        });
+    };
+
+    // פונקציה לשליפת רשימת מרכיבים מהמתכון שהתקבל
+    private extractIngredients(mealData: any): string[] {
+        const ingredients: string[] = [];
+        for (let i = 1; i <= 20; i++) { // עד 20 מרכיבים פוטנציאליים
+            const ingredient = mealData[`strIngredient${i}`];
+            if (ingredient && ingredient.trim()) {
+                ingredients.push(ingredient.trim());
+            }
+        }
+        return ingredients;
     }
+
+    // פונקציה לשליפת תגיות מהמתכון שהתקבל
+    private extractTags(mealData: any): string[] {
+        return mealData.strTags ? mealData.strTags.split(',').map((tag: string) => tag.trim()) : [];
+    };
+
+
 
     override async get(req: Request, res: Response): Promise<void> {
         try {
@@ -84,21 +162,22 @@ class RecipeController extends BaseController<IRecipe> {
     }
     
 
-    override async create(req: Request, res: Response): Promise<void> {
+    override async create(req: Request, res: Response): Promise<void> {        
         try {
-
+            
             let ingredients = req.body.ingredients;
 
             // המרה ל-JSON בכל מקרה, אבל אם זה לא מחרוזת, נמיר אותו קודם למחרוזת
             try {
                 ingredients = JSON.parse(typeof ingredients === "string" ? ingredients : JSON.stringify(ingredients));
+
             } catch (error) {
                 console.error("❌ Invalid JSON format:", ingredients);
                 ingredients = []; // ברירת מחדל במקרה של שגיאה
             }
             
             let tags = req.body.tags;
-
+            
             // המרה ל-JSON בכל מקרה, עם בדיקה שהנתון מוכן לפענוח
             try {
                 tags = JSON.parse(typeof tags === "string" ? tags : JSON.stringify(tags));
@@ -114,13 +193,6 @@ class RecipeController extends BaseController<IRecipe> {
                 res.status(400).json({ message: "Invalid or missing ingredients array" });
                 return;
             }
-            if (!Array.isArray(tags) || tags.length === 0) {
-                res.status(400).json({ message: "Invalid or missing tags array" });
-                return;
-            }
-    
-            // קבלת המשתמש המחובר (במקום לשלוח owner מהפרונט)
-            //const owner =  "guest";  // 👈 צריך authMiddleware        //req.user?.id ||
     
             // יצירת המתכון
             const createdRecipe = await this.model.create({
@@ -129,6 +201,7 @@ class RecipeController extends BaseController<IRecipe> {
                 likes: Number(req.body.likes) || 0, // המרה למספר
                 owner: req.body.owner,
             });
+
             const recipeId = createdRecipe._id;
     
             // שמירת מרכיבים
@@ -218,7 +291,20 @@ class RecipeController extends BaseController<IRecipe> {
         }
     }
 
-    override async delete(req: Request, res: Response) {
+    async deleteImage(imagePath: string) {
+        const filePath = path.join(__dirname, 'public', imagePath); // בנה את הנתיב המלא לקובץ
+      
+        // אם הקובץ קיים, נמחק אותו
+        fs.unlink(filePath, (err) => {
+          if (err) {
+            console.error('Error deleting image:', err);
+          } else {
+            console.log('Image deleted successfully');
+          }
+        });
+    };
+
+    override async delete(req: Request, res: Response) : Promise<void> {
         const id = req.params._id;
         try {
             const recipe = await this.model.findByIdAndDelete(id);
@@ -236,7 +322,7 @@ class RecipeController extends BaseController<IRecipe> {
     
     override async update(req: Request, res: Response) {
         try {
-            const { _id, ingredients, tags } = req.body;
+            const { _id, ingredients, tags} = req.body;
             const body = req.body;
             const item = await this.model.findByIdAndUpdate(_id, body, { new: true });
             

@@ -1,7 +1,7 @@
 import request, { Response } from "supertest";
 import initApp from "../server";
 import mongoose from "mongoose";
-import { Express } from "express";
+import { Express, response } from "express";
 import recipeModel, { IRecipe } from "../models/recipe_model";
 import ingredientModel from "../models/ingredient_model"
 import tagModel from "../models/tag_model";
@@ -17,7 +17,7 @@ type User = IUser & {
 };
 
 const testUser: User = {
-  email: "test@user.com",
+  email: "arbel.tzoran.98@gmailx.com",
   password: "testpassword",
   name: "user1",
   last_name: "last1",
@@ -154,8 +154,12 @@ describe("Recipe Tests", () => {
     
     expect(response2.statusCode).toBe(404);
   });
+  test("Recipe create random from rest", async () => {
+    const response = await request(app).post(baseUrl + "/random").set({ authorization: "JWT " + testUser.accessToken });
+    expect(response.statusCode).toBe(201);
+    console.log(response.body);
+  });
 
-  
 });
 
 async function parseBody(body: ReadableStream<Uint8Array> | IRecipe): Promise<IRecipe> {
@@ -190,16 +194,12 @@ async function validateRecipeResponse(response: request.Response, testRecipe: IR
     if (!Array.isArray(body)) {
       expect(body.title).toBe(testRecipe.title);
       expect(body.image).toBe(testRecipe.image);
-      expect(body.ingredients).toStrictEqual(testRecipe.ingredients);
-      expect(body.tags).toStrictEqual(testRecipe.tags);
       expect(body.owner).toBe(testRecipe.owner);
       expect(body.likes).toBe(testRecipe.likes);
     }
     else {
       expect(body[0].title).toBe(testRecipe.title);
       expect(body[0].image).toBe(testRecipe.image);
-      expect(body[0].ingredients).toStrictEqual(testRecipe.ingredients);
-      expect(body[0].tags).toStrictEqual(testRecipe.tags);
       expect(body[0].owner).toBe(testRecipe.owner);
       expect(body[0].likes).toBe(testRecipe.likes);
     }

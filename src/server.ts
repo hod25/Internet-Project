@@ -10,6 +10,8 @@ import auth_routes from "./routes/auth_routes";
 import users_routes from "./routes/users.routes";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
+import path from 'path';
+
 
 
 const app = express();
@@ -59,12 +61,14 @@ const initApp = (): Promise<Express> => {
       .connect(process.env.DB_CONNECT)
       .then(() => {
         console.log("Connected to the database");
+        app.use('/public', express.static('public'));
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({ extended: true }));
         app.use("/recipe", recipe_routes);
         app.use("/comments", comments_routes);
         app.use("/auth", auth_routes);
         app.use("/users", users_routes);
+        app.use(express.static("public"));
         resolve(app);
       })
       .catch((err) => {

@@ -14,7 +14,7 @@ type User = IUser & {
 };
 
 const testUser: User  = {
-  email: "test@user.com",
+  email: "arbel.tzoran.98@gmail.com",
   password: "testpassword",
   name: "user1",
   last_name: "last1",
@@ -25,7 +25,7 @@ const testUser: User  = {
 }
 
 const testUser2: User  = {
-  email: "galgadot@user.com",
+  email: "fainman@mail.tau.ac.il",
   password: "wonderwoman",
   name: "gal",
   last_name: "gadot",
