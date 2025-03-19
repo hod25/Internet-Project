@@ -7,7 +7,7 @@
     "prod": "cp .env_prod .env && tsc && nodemon ./src/app.ts",
     "dev": "cp .env_dev .env && nodemon ./src/app.ts",
     "start": "cp .env_dev .env && tsc && node ./dist/app.js",
-    "test": "cls && cp .env_test .env && tsc && jest --detectOpenHandles --forceExit --runInBand",
+    "test": "cp .env_test .env && tsc && jest --detectOpenHandles --forceExit --runInBand",
     "testAuth": "jest --detectOpenHandles --forceExit auth.test.ts",
     "testPost": "jest --detectOpenHandles --forceExit posts.test.ts",
     "lint": "eslint . --ext .ts"
