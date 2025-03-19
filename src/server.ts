@@ -13,13 +13,11 @@ import swaggerUi from "swagger-ui-express";
 import path from 'path';
 
 
-
 const app = express();
-
 
 app.use(
   cors({
-    origin: "http://localhost:5173", 
+    origin: ["http://node66.cs.colman.ac.il", "http://193.106.55.226", "http://localhost:5173"],    
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"], // Add "Authorization" to allowed headers
@@ -37,11 +35,11 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `http://localhost:${process.env.PORT}`,
+        url: `http://node66.cs.colman.ac.il:${process.env.PORT || 4000}`,
       },
     ],
   },
-  apis: ["./src/routes/*.ts", "./src/controllers/*.ts"], // Path to the API docs
+  apis: ["./src/routes/*.ts", "./src/controllers/*.ts"],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
