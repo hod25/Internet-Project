@@ -1,4 +1,6 @@
 import express, { Express } from "express";
+import path from "path"; // Add this line
+import cors from "cors"; // Add this line
 const app = express();
 import dotenv from "dotenv";
 dotenv.config();
@@ -47,13 +49,21 @@ const initApp = (): Promise<Express> => {
     } else {
       mongoose
         .connect(process.env.DB_CONNECT)
-        .then(() => {
+        .then(() => {        
           app.use(bodyParser.json());
           app.use(bodyParser.urlencoded({ extended: true }));
+          app.use(cors()); // Add this line
           app.use("/recipe", recipe_routes);
           app.use("/comments", comments_routes);
           // app.use("/auth", recipe_routes);
           app.use("/users", users_routes);
+
+          // Serve frontend files
+          app.use(express.static(path.join(__dirname, "../../Front")));
+          app.get("*", (req, res) => {
+            res.sendFile(path.join(__dirname, "../../Front", "index.html"));
+          });
+
           resolve(app);
         })
         .catch((err) => {

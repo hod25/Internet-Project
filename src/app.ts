@@ -14,9 +14,17 @@ const tmpFunc = async () => {
         console.log(`Example app listening at ${domainBase}:${port}`);
       });
     } else {
+      const keyPath = "./certificates/client-key.pem";
+      const certPath = "./certificates/client-cert.pem";
+
+      if (!fs.existsSync(keyPath) || !fs.existsSync(certPath)) {
+        console.error("Certificate files not found at the specified path.");
+        return;
+      }
+
       const httpsOptions = {
-        key: fs.readFileSync("./client-key.pem"),
-        cert: fs.readFileSync("./client-cert.pem"),
+        key: fs.readFileSync(keyPath),
+        cert: fs.readFileSync(certPath),      
       };
       https.createServer(httpsOptions, app).listen(port, () => {
         console.log(`Example app listening at ${domainBase}:${port}`);
