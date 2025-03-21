@@ -365,9 +365,9 @@ class RecipeController extends BaseController<IRecipe> {
             }
 
             item.likes+=1;
-            await item.save(); // שמירה במסד הנתונים
+            await item.save();
 
-            res.json({ message: "Like added", likes: item.likes }); // מחזיר מספר לייקים עדכני
+            res.json({ message: "Like added", likes: item.likes });
         } catch (error) {
             res.status(400).json({ message: "Error adding like", error: (error as Error).message });
         }

@@ -150,14 +150,12 @@ describe("Recipe Tests", () => {
     const response = await request(app).delete(baseUrl + recipeId).set({ authorization: "JWT " + testUser.accessToken });
     expect(response.statusCode).toBe(200);
     const response2 = await request(app).get(baseUrl + recipeId);
-    console.log(response2.body);
     
     expect(response2.statusCode).toBe(404);
   });
   test("Recipe create random from rest", async () => {
     const response = await request(app).post(baseUrl + "/random").set({ authorization: "JWT " + testUser.accessToken });
     expect(response.statusCode).toBe(201);
-    console.log(response.body);
   });
 
 });

@@ -9,8 +9,6 @@ class BaseController<T> {
 
     //get all or get by id based on reqest params
     async get(req: Request, res: Response) {
-        console.log("base get");
-        
         const filter = req.params._id;
         try {
             if (filter) {
@@ -33,7 +31,6 @@ class BaseController<T> {
         const id = req.params._id;
         try {
             const item = await this.model.findById(id);
-            console.log(item);
             
             if (item != null) {
                 res.send(item);
@@ -58,7 +55,6 @@ class BaseController<T> {
 
     async create(req: Request, res: Response) {
         const body = req.body;
-        console.log(body.owner);
         try {
             const item = await this.model.create(body);
             res.status(201).send(item);

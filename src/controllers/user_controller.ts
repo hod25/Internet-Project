@@ -48,7 +48,6 @@ class UserController extends BaseController<typeof userModel> {
 
     async register(req: Request, res: Response): Promise<void> {
         try {
-            console.log("Incoming request data:", req.body); // Log incoming request data
             const { email, password, name, last_name } = req.body;
 
             // Check if the user already exists
@@ -80,12 +79,9 @@ class UserController extends BaseController<typeof userModel> {
     async get(req: Request, res: Response): Promise<void> {
         try {
             const userId = req.params._id;
-            console.log(userId);
             
             if (userId) {
                 const user = await this.model.findById(userId);
-                console.log(user);
-
                 if (!user) {
                     res.status(404).send({ message: "User not found" });
                     return;
@@ -121,7 +117,6 @@ class UserController extends BaseController<typeof userModel> {
     
     async updateUser(req: Request, res: Response): Promise<void> {
       const { email, img, name, background, tags } = req.body;
-      console.log(req.body);
     
       if (!email) {
         res.status(400).json({ message: "User email is required" });
@@ -134,16 +129,12 @@ class UserController extends BaseController<typeof userModel> {
         return;
       }
     
-      // עדכון שם ורקע
       user.name = name || user.name;
       user.background = background || user.background;
       
-      // עדכון תגיות
       if (tags) {
-        // מחיקה של התגיות הקודמות
         await userTagModel.deleteMany({ user: user._id });
     
-        // כאן נמצא ה-logic שמחפש את ה-ID של התגיות מתוך טבלת tags
         const tagIds = await Promise.all(
           JSON.parse(tags).map(async (tag: string) => {
             const tagDoc = await tagModel.findOne({ name: tag });
@@ -151,10 +142,8 @@ class UserController extends BaseController<typeof userModel> {
           })
         );
     
-        // מסנן את הערכים null אם יש כאלה
         const validTagIds = tagIds.filter((tag) => tag !== null);
     
-        // הוספה של התגיות החדשות
         await userTagModel.insertMany(validTagIds);
       }
       
@@ -165,25 +154,18 @@ class UserController extends BaseController<typeof userModel> {
 
     async getTagsForUser (req: Request, res: Response) :Promise<void> {
         try {
-          const userId = req.params._id; // מקבלים את ה-ID של המשתמש מהפרמטר ב-URL
-          console.log(userId);
+          const userId = req.params._id;       
           
-          // בודקים אם יש ID
           if (!userId) {
             res.status(400).json({ message: 'User ID is required' });
             return;
           }
-          
-          // מחפשים את כל ה-UserTags עם ה-userId
           const userTags = await userTagModel.find({ user: userId }).populate('tag', 'name');
-      
-          // אם לא מצאנו משתמש עם התגיות
           if (userTags.length === 0) {
             res.status(404).json({ message: 'No tags found for this user' });
             return;
           }
       
-          // שולפים את כל התגיות מתוך ה-populated tags
           const tags = userTags.map(userTag => userTag.tag as unknown as ({ name: string }));
       
           res.json({ tags });

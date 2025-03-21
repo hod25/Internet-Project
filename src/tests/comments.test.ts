@@ -103,7 +103,6 @@ describe("Commnents test suite", () => {
   });
 
   test("Test get comment by id", async () => {
-    console.log(commentId);
     const response = await request(app).get(baseUrl +"/" + commentId);
     expect(response.statusCode).toBe(200);    
     expect(response.body._id).toBe(commentId);
