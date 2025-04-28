@@ -1,5 +1,7 @@
 import express, { Express } from "express";
-import cors from "cors";
+import path from "path"; // Add this line
+import cors from "cors"; // Add this line
+const app = express();
 import dotenv from "dotenv";
 dotenv.config();
 import mongoose from "mongoose";
@@ -24,6 +26,9 @@ app.use(
   })
 );
 
+const port = process.env.PORT;
+const domainBase = process.env.DOMAIN_BASE;
+
 // Swagger configuration
 const swaggerOptions = {
   swaggerDefinition: {
@@ -35,7 +40,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `http://node66.cs.colman.ac.il:${process.env.PORT || 4000}`,
+        url: `${domainBase}`,
       },
     ],
   },
@@ -56,23 +61,27 @@ const initApp = (): Promise<Express> => {
       reject("DB_CONNECT is not defined");
     } else {
       mongoose
-      .connect(process.env.DB_CONNECT)
-      .then(() => {
-        console.log("Connected to the database");
-        app.use('/public', express.static('public'));
-        app.use(bodyParser.json());
-        app.use(bodyParser.urlencoded({ extended: true }));
-        app.use("/recipe", recipe_routes);
-        app.use("/comments", comments_routes);
-        app.use("/auth", auth_routes);
-        app.use("/users", users_routes);
-        app.use(express.static("public"));
-        resolve(app);
-      })
-      .catch((err) => {
-        console.error("DB Connection Error:", err);
-        reject(err);
-      });
+        .connect(process.env.DB_CONNECT)
+        .then(() => {        
+          app.use(bodyParser.json());
+          app.use(bodyParser.urlencoded({ extended: true }));
+          app.use(cors()); // Add this line
+          app.use("/recipe", recipe_routes);
+          app.use("/comments", comments_routes);
+          // app.use("/auth", recipe_routes);
+          app.use("/users", users_routes);
+
+          // Serve frontend files
+          app.use(express.static(path.join(__dirname, "../../Front")));
+          app.get("*", (req, res) => {
+            res.sendFile(path.join(__dirname, "../../Front", "index.html"));
+          });
+
+          resolve(app);
+        })
+        .catch((err) => {
+          reject(err);
+        });
     }
   });
 };
