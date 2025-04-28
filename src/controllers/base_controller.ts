@@ -12,11 +12,11 @@ class BaseController<T> {
         const filter = req.params._id;
         try {
             if (filter) {
-                const item = await this.model.find({ _id: filter });
+                const item = await this.model.findOne({ _id: filter });
                 if (item)
                     res.send(item);
                 else
-                    res.status(404)
+                    res.status(404).send({ message: "No items found" });
             } else {
                 const items = await this.model.find();
                 res.send(items);
@@ -27,19 +27,20 @@ class BaseController<T> {
     };
 
     // לא מיותר!
-    // async getById(req: Request, res: Response) {
-    //     const id = req.params.id;
-    //     try {
-    //         const item = await this.model.findById(id);
-    //         if (item != null) {
-    //             res.send(item);
-    //         } else {
-    //             res.status(404).send("not found");
-    //         }
-    //     } catch (error) {
-    //         res.status(400).send(error);
-    //     }
-    // };
+    async getById(req: Request, res: Response) {
+        const id = req.params._id;
+        try {
+            const item = await this.model.findById(id);
+            
+            if (item != null) {
+                res.send(item);
+            } else {
+                res.status(404).send("not found");
+            }
+        } catch (error) {
+            res.status(400).send(error);
+        }
+    };
 
     async update(req: Request, res: Response) {
         const id = req.body._id;

@@ -16,7 +16,6 @@ const tmpFunc = async () => {
     } else {
       const keyPath = "./certificates/client-key.pem";
       const certPath = "./certificates/client-cert.pem";
-
       if (!fs.existsSync(keyPath) || !fs.existsSync(certPath)) {
         console.error("Certificate files not found at the specified path.");
         return;

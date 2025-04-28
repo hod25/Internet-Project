@@ -8,10 +8,23 @@ import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import recipe_routes from "./routes/recipe_routes";
 import comments_routes from "./routes/comments_route";
-// import auth_routes from "./routes/auth_routes";
+import auth_routes from "./routes/auth_routes";
 import users_routes from "./routes/users.routes";
 import swaggerJsDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
+import path from 'path';
+
+
+const app = express();
+
+app.use(
+  cors({
+    origin: ["http://node66.cs.colman.ac.il", "http://193.106.55.226", "http://localhost:5173"],    
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"], // Add "Authorization" to allowed headers
+  })
+);
 
 const port = process.env.PORT;
 const domainBase = process.env.DOMAIN_BASE;
@@ -31,7 +44,7 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ["./src/routes/*.ts", "./src/controllers/*.ts"], // Path to the API docs
+  apis: ["./src/routes/*.ts", "./src/controllers/*.ts","./src/models/*.ts"],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);

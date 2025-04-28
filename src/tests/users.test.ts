@@ -12,24 +12,25 @@ type User = IUser & {
   accessToken?: string,
   refreshToken?: string
 };
+
 const testUser: User = {
-  email: "test@user.com",
+  email: "arbel.tzoran.98@gmail.com",
   password: "testpassword",
   name: "user1",
   last_name: "last1",
   background: "background1",
   image: "image1",
-  tag: "tag1",
-  profile: "profile1",
+  tags: ["tag1"],
+  profile: "profile1"
 }
 const testUser2: User = {
-    email: "galgadot@user.com",
+    email: "fainman@mail.tau.ac.il",
     password: "wonderwoman",
     name: "gal",
     last_name: "gadot",
     background: "background2",
     image: "image2",
-    tag: "tag2",
+    tags: ["tag2"],
     profile: "profile2",
   }
 
@@ -54,26 +55,26 @@ describe("Users Tests", () => {
 
   test("Test Create User", async () => {
     const response = await request(app).post("/auth/register").send(testUser);
-    expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(201);
   });
 
   test("Test get user by email", async () => {
     const response = await request(app).get(baseUrl + "?email=" + testUser.email);
     expect(response.statusCode).toBe(200);
     expect(response.body.length).toBe(1);
-    expect(response.body[0].email).toBe("test@user.com");
+    expect(response.body[0].email).toBe("arbel.tzoran.98@gmail.com");
     _id = response.body[0]._id
   });
 
   test("Test get user by id", async () => {
-    const response = await request(app).get(baseUrl + "?id=" + _id);
+    const response = await request(app).get(baseUrl + "/id/" + _id);
     expect(response.statusCode).toBe(200);
-    expect(response.body[0].email).toBe("test@user.com");
+    expect(response.body.email).toBe("arbel.tzoran.98@gmail.com");
   });
 
   test("Test Create User 2", async () => {
     const response = await request(app).post("/auth/register").send(testUser2);
-    expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(201);
   });
 
   test("Test get all 2", async () => {
@@ -91,10 +92,7 @@ describe("Users Tests", () => {
 
   test("Test Create User fail", async () => {
     const response = await request(app).post("/auth/register")
-      .set({ authorization: "JWT " + testUser.accessToken })
-      .send({
-        email: "test@mail",
-      });
+      .send(testUser2);
     expect(response.statusCode).toBe(400);
   });
 });

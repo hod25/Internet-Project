@@ -3,29 +3,35 @@ import initApp from "../server";
 import mongoose from "mongoose";
 import commentsModel from "../models/comment_model";
 import { Express } from "express";
+import userModel, { IUser } from "../models/users_model";
 
 let app: Express;
 const baseUrl = "/comments";
 
-const testUser = {
-  email: "test@user.com",
+type User = IUser & {
+  accessToken?: string,
+  refreshToken?: string
+};
+
+const testUser: User  = {
+  email: "arbel.tzoran.98@gmail.com",
   password: "testpassword",
   name: "user1",
   last_name: "last1",
   background: "background1",
   image: "image1",
-  tag: "tag1",
+  tags: ["tag1"],
   profile: "profile1",
 }
 
-const testUser2 = {
-  email: "galgadot@user.com",
+const testUser2: User  = {
+  email: "fainman@mail.tau.ac.il",
   password: "wonderwoman",
   name: "gal",
   last_name: "gadot",
   background: "background2",
   image: "image2",
-  tag: "tag2",
+  tags: ["tag2"],
   profile: "profile2",  
 };
 
@@ -36,6 +42,12 @@ beforeAll(async () => {
   app = await initApp();
   console.log("beforeAll");
   await commentsModel.deleteMany();
+  await userModel.deleteMany();
+  await request(app).post("/auth/register").send(testUser);
+  const res = await request(app).post("/auth/login").send(testUser);
+  testUser.accessToken = res.body.accessToken;
+  testUser.refreshToken = res.body.refreshToken;
+  expect(testUser.refreshToken).toBeDefined();
 });
 
 afterAll(async () => {
@@ -64,16 +76,16 @@ describe("Commnents test suite", () => {
 
 
   test("Test Addding new comment", async () => {
-    const response = await request(app).post(baseUrl).send(testComment);
+    const response = await request(app).post(baseUrl).set({ authorization: "JWT " + testUser.accessToken }).send(testComment);
     expect(response.statusCode).toBe(201);
     expect(response.body.comment).toBe(testComment.comment);
-    expect(response.body.postId).toBe(testComment.recipeId);
+    expect(response.body.recipeId).toBe(testComment.recipeId);
     expect(response.body.owner).toBe(testComment.owner);
     commentId = response.body._id;
   });
 
   test("Test Addding invalid comment", async () => {
-    const response = await request(app).post(baseUrl).send(invalidComment);
+    const response = await request(app).post(baseUrl).set({ authorization: "JWT " + testUser.accessToken }).send(invalidComment);
     expect(response.statusCode).not.toBe(201);
   });
 
@@ -91,8 +103,8 @@ describe("Commnents test suite", () => {
   });
 
   test("Test get comment by id", async () => {
-    const response = await request(app).get(baseUrl + commentId);
-    expect(response.statusCode).toBe(200);
+    const response = await request(app).get(baseUrl +"/" + commentId);
+    expect(response.statusCode).toBe(200);    
     expect(response.body._id).toBe(commentId);
   });
 
