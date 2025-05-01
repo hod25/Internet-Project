@@ -1,4 +1,4 @@
-﻿# RESTful API Project
+# ﻿Internet-Project-Frontend
  
 A modern TypeScript-based backend project designed for scalable web application development. It emphasizes environment-specific configurations, testing, and process management.​
 
